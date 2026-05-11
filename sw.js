@@ -1,105 +1,79 @@
-// Vinyl Radar — Service Worker v1
-// Cache-first for app shell, network-first for API calls
+const CACHE_VERSION = 'vr-v1.2.0';
+const SHELL_CACHE = `${CACHE_VERSION}-shell`;
+const ASSET_CACHE = `${CACHE_VERSION}-assets`;
+const API_CACHE = `${CACHE_VERSION}-api`;
 
-const CACHE_NAME = 'vinyl-radar-v1';
-
-// App shell: files to cache on install
-const APP_SHELL = [
+const SHELL_URLS = [
   './',
   './index.html',
   './manifest.json',
-  'https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Syne:wght@400;500;600;700&display=swap'
+  './icons/icon-192.png',
+  './icons/icon-512.png',
 ];
 
-// ── Install: pre-cache app shell ────────────────────────────────────────────
-self.addEventListener('install', event => {
+const API_HOSTS = [
+  'api.discogs.com',
+  'musicbrainz.org',
+  'coverartarchive.org',
+];
+
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(APP_SHELL))
-      .then(() => self.skipWaiting())
+    caches.open(SHELL_CACHE).then((c) => c.addAll(SHELL_URLS)).then(() => self.skipWaiting())
   );
 });
 
-// ── Activate: clean up old caches ───────────────────────────────────────────
-self.addEventListener('activate', event => {
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys
-          .filter(key => key !== CACHE_NAME)
-          .map(key => caches.delete(key))
-      )
-    ).then(() => self.clients.claim())
+    caches.keys().then((keys) => Promise.all(
+      keys.filter((k) => !k.startsWith(CACHE_VERSION)).map((k) => caches.delete(k))
+    )).then(() => self.clients.claim())
   );
 });
 
-// ── Fetch strategy ──────────────────────────────────────────────────────────
-// API calls (Discogs, MusicBrainz): network only — never cache these
-// Google Fonts files: cache first (they're versioned/immutable)
-// Everything else (app shell): stale-while-revalidate
-self.addEventListener('fetch', event => {
-  const url = new URL(event.request.url);
+self.addEventListener('fetch', (event) => {
+  const req = event.request;
+  if (req.method !== 'GET') return;
 
-  // Skip non-GET requests
-  if (event.request.method !== 'GET') return;
+  const url = new URL(req.url);
 
-  // API calls — network only, don't cache
-  if (url.hostname === 'api.discogs.com' || url.hostname === 'musicbrainz.org') {
-    event.respondWith(fetch(event.request));
-    return;
-  }
-
-  // Google Fonts static files — cache first (immutable content)
-  if (url.hostname === 'fonts.gstatic.com') {
+  if (req.mode === 'navigate' || (req.destination === 'document')) {
     event.respondWith(
-      caches.match(event.request).then(cached => {
-        if (cached) return cached;
-        return fetch(event.request).then(response => {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-          return response;
-        });
-      })
+      fetch(req).then((res) => {
+        const copy = res.clone();
+        caches.open(SHELL_CACHE).then((c) => c.put(req, copy));
+        return res;
+      }).catch(() => caches.match(req).then((r) => r || caches.match('./index.html')))
     );
     return;
   }
 
-  // Cover images from Discogs — cache with limit
-  if (url.hostname.includes('discogs') && event.request.destination === 'image') {
+  if (API_HOSTS.some((h) => url.hostname.endsWith(h))) {
     event.respondWith(
-      caches.match(event.request).then(cached => {
+      fetch(req).then((res) => {
+        if (res && res.ok) {
+          const copy = res.clone();
+          caches.open(API_CACHE).then((c) => c.put(req, copy));
+        }
+        return res;
+      }).catch(() => caches.match(req).then((cached) => cached || new Response(JSON.stringify({ offline: true }), { status: 503, headers: { 'Content-Type': 'application/json' } })))
+    );
+    return;
+  }
+
+  if (req.destination === 'image' || req.destination === 'style' || req.destination === 'script' || req.destination === 'font') {
+    event.respondWith(
+      caches.match(req).then((cached) => {
         if (cached) return cached;
-        return fetch(event.request).then(response => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        return fetch(req).then((res) => {
+          if (res && res.ok && res.type === 'basic') {
+            const copy = res.clone();
+            caches.open(ASSET_CACHE).then((c) => c.put(req, copy));
           }
-          return response;
-        }).catch(() => new Response('', { status: 408 }));
+          return res;
+        }).catch(() => cached);
       })
     );
     return;
   }
-
-  // App shell & everything else — stale-while-revalidate
-  // Serve cached version immediately, fetch fresh copy in background
-  event.respondWith(
-    caches.match(event.request).then(cached => {
-      const fetchPromise = fetch(event.request).then(response => {
-        if (response.ok) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-        }
-        return response;
-      }).catch(() => {
-        // Offline and not in cache — return a basic fallback for navigation
-        if (event.request.mode === 'navigate') {
-          return caches.match('./index.html');
-        }
-        return new Response('', { status: 408 });
-      });
-
-      return cached || fetchPromise;
-    })
-  );
 });

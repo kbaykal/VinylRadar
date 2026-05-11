@@ -1,0 +1,2046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Vinyl Radar</title>
+<meta name="description" content="Track your vinyl collection. Scan barcodes, get tracklists, see what your records are worth.">
+<meta name="theme-color" content="#1a1a18">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#faf9f6;--bg2:#f0eeea;--bg3:#e6e3dd;
+  --tx:#1a1a18;--tx2:#5c5a54;--tx3:#8a877f;
+  --accent:#c84b31;--accent2:#e86f55;--accent-bg:rgba(200,75,49,0.08);
+  --border:#ddd9d0;--border2:#c9c4b8;
+  --card:#fff;--radius:10px;--radius-lg:14px;
+  --serif:'DM Serif Display',Georgia,serif;
+  --sans:'Syne',-apple-system,BlinkMacSystemFont,sans-serif;
+  --mono:'SF Mono','Fira Code',monospace;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#1a1a18;--bg2:#242420;--bg3:#2e2e28;
+    --tx:#ece8df;--tx2:#a09d94;--tx3:#6d6a62;
+    --accent:#e86f55;--accent2:#ff9b85;--accent-bg:rgba(232,111,85,0.12);
+    --border:#3a3830;--border2:#4a4840;
+    --card:#242420;
+  }
+}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--sans);background:var(--bg);color:var(--tx);
+  min-height:100vh;min-height:100dvh;overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+input,select,textarea,button{font-family:inherit;font-size:inherit}
+button{cursor:pointer;border:none;background:none;color:inherit}
+a{color:var(--accent);text-decoration:none}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* Animations */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes spinSlow{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes scanLine{0%{top:10%}50%{top:85%}100%{top:10%}}
+.anim-fade{animation:fadeUp .4s ease-out both}
+.anim-stagger>*{animation:fadeUp .4s ease-out both}
+.anim-stagger>*:nth-child(1){animation-delay:.05s}
+.anim-stagger>*:nth-child(2){animation-delay:.1s}
+.anim-stagger>*:nth-child(3){animation-delay:.15s}
+.anim-stagger>*:nth-child(4){animation-delay:.2s}
+.anim-stagger>*:nth-child(5){animation-delay:.25s}
+.anim-stagger>*:nth-child(6){animation-delay:.3s}
+
+/* Layout */
+.app{max-width:960px;margin:0 auto;padding-bottom:100px}
+
+/* Header */
+.header{
+  position:sticky;top:0;z-index:30;
+  background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+}
+.header-inner{
+  max-width:960px;margin:0 auto;padding:16px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.logo{display:flex;align-items:center;gap:12px}
+.logo svg{width:36px;height:36px;animation:spinSlow 10s linear infinite}
+.logo-text h1{font-family:var(--serif);font-size:26px;line-height:1;letter-spacing:-.5px}
+.logo-text p{font-size:9px;text-transform:uppercase;letter-spacing:.25em;color:var(--tx3);margin-top:2px}
+.btn-add{
+  background:var(--accent);color:#fff;
+  padding:10px 20px;border-radius:50px;
+  font-weight:600;font-size:14px;letter-spacing:.02em;
+  display:flex;align-items:center;gap:8px;
+  transition:all .2s;box-shadow:0 2px 12px rgba(200,75,49,.25);
+}
+.btn-add:hover{background:var(--accent2);transform:translateY(-1px);box-shadow:0 4px 20px rgba(200,75,49,.35)}
+
+/* Tabs */
+.tabs{
+  display:flex;gap:2px;padding:0 20px;
+  max-width:960px;margin:0 auto;
+  border-bottom:1px solid var(--border);
+}
+.tab{
+  position:relative;padding:14px 18px;font-size:13px;font-weight:500;
+  color:var(--tx3);display:flex;align-items:center;gap:7px;
+  transition:color .2s;letter-spacing:.01em;
+}
+.tab:hover{color:var(--tx2)}
+.tab.active{color:var(--tx)}
+.tab.active::after{
+  content:'';position:absolute;bottom:-1px;left:0;right:0;
+  height:2px;background:var(--accent);border-radius:2px 2px 0 0;
+}
+.tab svg{width:15px;height:15px}
+
+/* Content */
+.content{padding:24px 20px}
+
+/* Search bar */
+.search-bar{display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap}
+.search-input{
+  flex:1;min-width:200px;position:relative;
+}
+.search-input input{
+  width:100%;padding:10px 12px 10px 38px;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:50px;font-size:14px;color:var(--tx);
+  transition:border-color .2s;
+}
+.search-input input:focus{outline:none;border-color:var(--accent)}
+.search-input input::placeholder{color:var(--tx3)}
+.search-input svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--tx3)}
+.sort-select{
+  padding:10px 16px;background:var(--card);border:1px solid var(--border);
+  border-radius:50px;font-size:13px;color:var(--tx);cursor:pointer;
+}
+.sort-select:focus{outline:none;border-color:var(--accent)}
+
+/* Record grid */
+.grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:16px;
+}
+@media(max-width:400px){.grid{grid-template-columns:repeat(2,1fr);gap:12px}}
+.record-card{text-align:left;transition:transform .2s}
+.record-card:hover{transform:translateY(-3px)}
+.record-card:active{transform:scale(.97)}
+.card-cover{
+  aspect-ratio:1;background:var(--bg2);border-radius:var(--radius);
+  overflow:hidden;margin-bottom:10px;position:relative;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+.card-cover img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
+.record-card:hover .card-cover img{transform:scale(1.05)}
+.card-cover .placeholder{
+  width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,var(--bg2),var(--bg3));
+}
+.card-cover .placeholder svg{width:32px;height:32px;color:var(--tx3);opacity:.5}
+.badge-want{
+  position:absolute;top:8px;right:8px;
+  background:var(--accent);color:#fff;
+  font-size:9px;text-transform:uppercase;letter-spacing:.12em;font-weight:600;
+  padding:3px 8px;border-radius:50px;
+}
+.card-title{font-family:var(--serif);font-size:15px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-artist{font-size:12px;color:var(--tx2);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-meta{display:flex;justify-content:space-between;align-items:baseline;margin-top:5px}
+.card-year{font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.15em;font-family:var(--mono)}
+.card-value{font-size:12px;font-weight:600;color:var(--tx)}
+
+/* Empty state */
+.empty{text-align:center;padding:80px 20px}
+.empty svg{width:72px;height:72px;color:var(--tx3);opacity:.3;margin-bottom:20px}
+.empty h2{font-family:var(--serif);font-size:28px;margin-bottom:8px}
+.empty p{color:var(--tx2);font-size:14px;max-width:300px;margin:0 auto 28px}
+.btn-primary{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--accent);color:#fff;
+  padding:12px 28px;border-radius:50px;font-weight:600;font-size:14px;
+  transition:all .2s;
+}
+.btn-primary:hover{background:var(--accent2)}
+
+/* Modal overlay */
+.modal-overlay{
+  position:fixed;inset:0;z-index:40;
+  background:rgba(0,0,0,.5);backdrop-filter:blur(4px);
+  display:flex;align-items:flex-end;justify-content:center;
+  animation:fadeIn .2s;
+}
+@media(min-width:640px){.modal-overlay{align-items:center;padding:24px}}
+.modal{
+  background:var(--bg);width:100%;max-width:640px;
+  max-height:95vh;max-height:95dvh;overflow-y:auto;
+  border-radius:20px 20px 0 0;
+  animation:fadeUp .3s ease-out;
+}
+@media(min-width:640px){.modal{border-radius:var(--radius-lg)}}
+.modal-close{
+  position:absolute;top:16px;right:16px;z-index:2;
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.2);color:#fff;transition:background .2s;
+}
+.modal-close:hover{background:rgba(0,0,0,.4)}
+
+/* Modal header with cover */
+.modal-hero{position:relative;padding:24px;display:flex;gap:16px}
+.modal-hero-bg{position:absolute;inset:0;overflow:hidden;border-radius:var(--radius-lg) var(--radius-lg) 0 0}
+.modal-hero-bg img{width:100%;height:100%;object-fit:cover;filter:blur(40px);opacity:.25}
+.modal-cover{
+  width:120px;height:120px;flex-shrink:0;
+  background:var(--bg2);border-radius:var(--radius);overflow:hidden;
+  box-shadow:0 4px 20px rgba(0,0,0,.15);position:relative;z-index:1;
+}
+@media(min-width:640px){.modal-cover{width:150px;height:150px}}
+.modal-cover img{width:100%;height:100%;object-fit:cover}
+.modal-info{flex:1;min-width:0;padding-top:4px;position:relative;z-index:1}
+.modal-title{font-family:var(--serif);font-size:24px;line-height:1.2}
+@media(min-width:640px){.modal-title{font-size:30px}}
+.modal-artist{color:var(--tx2);margin-top:4px;font-size:14px}
+.modal-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;font-size:12px;color:var(--tx3)}
+
+/* Form fields */
+.modal-body{padding:0 24px 24px}
+.field{margin-bottom:16px}
+.field-label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.2em;color:var(--tx3);margin-bottom:6px;font-weight:500}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field input,.field select,.field textarea{
+  width:100%;padding:10px 12px;background:var(--card);
+  border:1px solid var(--border);border-radius:var(--radius);
+  font-size:14px;color:var(--tx);transition:border-color .2s;
+}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent)}
+.field textarea{resize:none;min-height:56px}
+.field-price{position:relative}
+.field-price .currency{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--tx3);font-size:14px}
+.field-price input{padding-left:28px}
+.checkbox-label{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--tx2);cursor:pointer;margin-bottom:16px}
+.checkbox-label input{width:16px;height:16px;accent-color:var(--accent)}
+
+/* Value card */
+.value-card{
+  background:var(--tx);color:var(--bg);border-radius:var(--radius);
+  padding:20px;margin-bottom:16px;
+}
+.value-card .label{font-size:10px;text-transform:uppercase;letter-spacing:.2em;opacity:.5}
+.value-card .amount{font-family:var(--serif);font-size:36px;margin-top:6px}
+.value-card .range{font-size:12px;opacity:.5;margin-top:4px}
+.confidence{
+  font-size:9px;text-transform:uppercase;letter-spacing:.12em;font-weight:600;
+  padding:3px 10px;border-radius:50px;float:right;
+}
+.confidence.high{background:rgba(52,211,153,.2);color:#34d399}
+.confidence.medium{background:rgba(251,191,36,.2);color:#fbbf24}
+.confidence.low{background:rgba(255,255,255,.15);color:rgba(255,255,255,.5)}
+.value-meta{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.1);font-size:12px}
+.value-meta dt{font-size:10px;text-transform:uppercase;letter-spacing:.15em;opacity:.4;margin-bottom:2px}
+.profit-pos{color:#34d399}
+.profit-neg{color:#f87171}
+
+/* Tracklist */
+.tracklist-header{font-size:10px;text-transform:uppercase;letter-spacing:.2em;color:var(--tx3);margin-bottom:8px;font-weight:500}
+.tracklist{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);overflow:hidden;margin-bottom:16px;
+}
+.track{
+  display:flex;align-items:center;gap:12px;padding:10px 14px;
+  font-size:13px;border-bottom:1px solid var(--border);
+}
+.track:last-child{border-bottom:none}
+.track-pos{font-family:var(--mono);font-size:11px;color:var(--tx3);width:32px;flex-shrink:0}
+.track-title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.track-dur{font-family:var(--mono);font-size:11px;color:var(--tx3)}
+
+/* Condition boxes */
+.condition-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.condition-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+.condition-box .cb-label{font-size:10px;text-transform:uppercase;letter-spacing:.2em;color:var(--tx3);margin-bottom:4px}
+.condition-box .cb-grade{font-family:var(--serif);font-size:22px}
+.condition-box .cb-name{font-size:12px;color:var(--tx2)}
+
+/* Discogs link */
+.discogs-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--tx2);margin-bottom:16px;transition:color .2s}
+.discogs-link:hover{color:var(--accent)}
+.discogs-link svg{width:14px;height:14px}
+
+/* Action buttons */
+.actions{display:flex;gap:8px;padding-top:16px;border-top:1px solid var(--border)}
+.btn-fill{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+  background:var(--tx);color:var(--bg);
+  padding:12px;border-radius:50px;font-size:14px;font-weight:600;
+  transition:opacity .2s;
+}
+.btn-fill:hover{opacity:.85}
+.btn-outline{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  border:1px solid var(--border);
+  padding:12px 18px;border-radius:50px;font-size:14px;
+  transition:background .2s;
+}
+.btn-outline:hover{background:var(--bg2)}
+.btn-danger{background:#dc2626;color:#fff}
+.btn-danger:hover{opacity:.85}
+
+/* Scanner fullscreen */
+.scanner{position:fixed;inset:0;z-index:50;background:#0a0a08;display:flex;flex-direction:column}
+.scanner-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;position:relative;z-index:2;
+}
+.scanner-header h2{font-family:var(--serif);font-size:20px;color:#fff;letter-spacing:-.3px}
+.scanner-header button{color:#eee;padding:8px}
+.scanner-header .btn-text{font-size:13px;color:var(--accent2);text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+.scanner-body{flex:1;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.scanner video{width:100%;height:100%;object-fit:cover}
+.scan-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.scan-frame{width:280px;height:160px;position:relative}
+.scan-corner{position:absolute;width:24px;height:24px;border-color:var(--accent2)}
+.scan-corner.tl{top:0;left:0;border-top:2px solid;border-left:2px solid}
+.scan-corner.tr{top:0;right:0;border-top:2px solid;border-right:2px solid}
+.scan-corner.bl{bottom:0;left:0;border-bottom:2px solid;border-left:2px solid}
+.scan-corner.br{bottom:0;right:0;border-bottom:2px solid;border-right:2px solid}
+.scan-line{
+  position:absolute;left:0;right:0;height:1px;
+  background:var(--accent2);box-shadow:0 0 12px var(--accent2);
+  animation:scanLine 2.5s ease-in-out infinite;
+}
+.scanner-hint{position:absolute;bottom:28px;left:0;right:0;text-align:center;color:rgba(255,255,255,.7);font-size:13px}
+.scanner-center{padding:0 32px;text-align:center}
+.scanner-center svg{width:48px;height:48px;color:var(--accent2);margin-bottom:16px}
+.scanner-center p{color:rgba(255,255,255,.6);margin-bottom:24px;font-size:14px;line-height:1.6}
+.manual-input{
+  width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
+  color:#fff;padding:14px;border-radius:var(--radius);text-align:center;
+  font-size:18px;letter-spacing:.15em;font-family:var(--mono);
+}
+.manual-input:focus{outline:none;border-color:var(--accent2)}
+.manual-input::placeholder{color:rgba(255,255,255,.3);letter-spacing:.08em;font-size:14px}
+
+/* Loading state */
+.loading-screen{padding:60px 20px;text-align:center}
+.loading-screen svg{width:48px;height:48px;color:var(--tx3);animation:spinSlow 1.5s linear infinite;margin-bottom:16px}
+.loading-screen h3{font-family:var(--serif);font-size:20px;margin-bottom:8px}
+.loading-screen p{font-family:var(--mono);font-size:13px;color:var(--tx3)}
+
+/* Alert/error */
+.alert{
+  display:flex;gap:10px;padding:12px;
+  background:var(--accent-bg);border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);
+  border-radius:var(--radius);margin-bottom:16px;font-size:13px;color:var(--tx2);
+}
+.alert svg{width:16px;height:16px;flex-shrink:0;margin-top:2px;color:var(--accent)}
+
+/* Dashboard */
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:32px}
+@media(min-width:640px){.stats-grid{grid-template-columns:repeat(4,1fr)}}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.stat-card .stat-label{font-size:10px;text-transform:uppercase;letter-spacing:.2em;color:var(--tx3)}
+.stat-card .stat-value{font-family:var(--serif);font-size:24px;margin-top:6px}
+.stat-card .stat-sub{font-size:11px;color:var(--tx3);margin-top:2px}
+.stat-accent-green .stat-value{color:#059669}
+.stat-accent-red .stat-value{color:#dc2626}
+.section-title{font-family:var(--serif);font-size:22px;margin-bottom:14px}
+.bar-row{margin-bottom:10px}
+.bar-row .bar-label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px}
+.bar-row .bar-label span:last-child{color:var(--tx3)}
+.bar-track{height:8px;background:var(--bg2);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;background:var(--tx);border-radius:4px;transition:width .6s ease-out}
+.bar-fill.accent{background:var(--accent)}
+.decade-chart{display:flex;align-items:flex-end;gap:8px;height:120px;margin-bottom:32px}
+.decade-bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.decade-bar .db-count{font-size:11px;color:var(--tx3)}
+.decade-bar .db-fill{width:100%;background:var(--accent);border-radius:4px 4px 0 0;transition:height .6s ease-out;min-height:2px}
+.decade-bar .db-label{font-family:var(--mono);font-size:10px;color:var(--tx3)}
+.top-list{display:flex;flex-direction:column;gap:8px}
+.top-item{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px}
+.top-rank{font-family:var(--serif);font-size:24px;color:var(--tx3);width:28px;text-align:center}
+.top-cover{width:48px;height:48px;background:var(--bg2);border-radius:6px;overflow:hidden;flex-shrink:0}
+.top-cover img{width:100%;height:100%;object-fit:cover}
+.top-info{flex:1;min-width:0}
+.top-info .top-title{font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.top-info .top-artist{font-size:12px;color:var(--tx2)}
+.top-value{font-family:var(--mono);font-size:14px;font-weight:600;white-space:nowrap}
+
+/* Settings */
+.settings-section{margin-bottom:36px;max-width:560px}
+.settings-section h3{font-family:var(--serif);font-size:22px;margin-bottom:8px}
+.settings-section p{font-size:13px;color:var(--tx2);margin-bottom:16px;line-height:1.6}
+.settings-section a{color:var(--accent);font-size:12px;display:inline-flex;align-items:center;gap:4px;margin-top:8px}
+.btn-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.btn-row button{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  border:1px solid var(--border);padding:12px;border-radius:var(--radius);
+  font-size:13px;font-weight:500;transition:background .2s;
+}
+.btn-row button:hover{background:var(--bg2)}
+.btn-row button svg{width:16px;height:16px}
+.info-box{
+  background:var(--accent-bg);border:1px solid color-mix(in srgb,var(--accent) 20%,transparent);
+  border-radius:var(--radius);padding:16px;font-size:13px;line-height:1.6;
+}
+.info-box strong{display:block;margin-bottom:4px;color:var(--tx)}
+.info-box p{color:var(--tx2)}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:60;
+  background:var(--tx);color:var(--bg);
+  padding:12px 24px;border-radius:50px;font-size:14px;font-weight:500;
+  box-shadow:0 8px 30px rgba(0,0,0,.25);
+  animation:fadeUp .3s ease-out;
+}
+.toast.error{background:#dc2626;color:#fff}
+
+/* SVG icons inline helper */
+.icon{width:16px;height:16px;display:inline-block;vertical-align:middle}
+
+/* R0 — duplicate notice */
+.dup-notice{
+  display:flex;align-items:center;gap:12px;
+  background:var(--accent-bg);
+  border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);
+  border-radius:var(--radius);padding:12px 14px;margin-bottom:18px;
+}
+.dup-icon{color:var(--accent);flex-shrink:0;display:flex}
+.dup-icon svg{width:18px;height:18px}
+.dup-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.dup-body strong{font-size:13px;color:var(--tx);font-weight:600}
+.dup-body span{font-size:12px;color:var(--tx2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dup-view{
+  background:var(--accent);color:#fff;font-size:12px;font-weight:600;
+  padding:6px 12px;border-radius:6px;flex-shrink:0;
+}
+.dup-view:hover{background:var(--accent2)}
+
+/* R0 — user tags */
+.user-tag{
+  font-size:11px;background:var(--bg2);color:var(--tx2);
+  padding:3px 9px;border-radius:50px;
+  border:1px solid var(--border);
+}
+
+/* R0 — for sale chip */
+.for-sale-chip{
+  display:inline-block;font-size:10px;text-transform:uppercase;letter-spacing:.1em;
+  background:var(--accent);color:#fff;padding:2px 8px;border-radius:50px;
+  margin-left:8px;font-weight:600;
+}
+
+/* R0 — confidence dot in title */
+.conf-dot{
+  display:inline-block;width:8px;height:8px;border-radius:50%;
+  margin-right:8px;vertical-align:middle;
+}
+.conf-dot.conf-high{background:#16a34a}
+.conf-dot.conf-medium{background:#d97706}
+.conf-dot.conf-low{background:#dc2626}
+
+/* R1 — collection bar */
+.col-bar{
+  display:flex;gap:6px;overflow-x:auto;padding:8px 20px 8px;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  border-bottom:1px solid var(--border);background:var(--bg);
+  position:sticky;top:54px;z-index:25;
+}
+.col-bar::-webkit-scrollbar{display:none}
+.col-chip{
+  flex-shrink:0;font-size:12px;font-weight:500;
+  padding:6px 14px;border-radius:50px;
+  background:transparent;color:var(--tx2);
+  border:1px solid var(--border);
+  transition:all .15s;white-space:nowrap;
+}
+.col-chip:hover{border-color:var(--border2);color:var(--tx)}
+.col-chip-active{
+  background:var(--tx);color:var(--bg);border-color:var(--tx);
+}
+.col-chip-new{
+  color:var(--accent);border-color:transparent;
+  display:inline-flex;align-items:center;gap:4px;
+}
+.col-chip-new:hover{background:var(--accent-bg)}
+.col-chip-manage{
+  font-size:11px;color:var(--tx3);border-style:dashed;
+}
+
+/* R1 — filter bar */
+.flt-bar-wrap{
+  display:flex;align-items:center;gap:8px;padding:10px 20px 4px;
+  position:sticky;top:104px;z-index:24;
+  background:color-mix(in srgb,var(--bg) 92%,transparent);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+}
+.flt-bar{
+  flex:1;display:flex;gap:6px;overflow-x:auto;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  padding:2px 0;
+}
+.flt-bar::-webkit-scrollbar{display:none}
+.flt-chip{
+  flex-shrink:0;font-size:11px;font-weight:500;
+  padding:5px 11px;border-radius:50px;
+  background:var(--card);color:var(--tx2);
+  border:1px solid var(--border);
+  transition:all .15s;white-space:nowrap;
+  display:inline-flex;align-items:center;gap:4px;
+}
+.flt-chip:hover{border-color:var(--border2);color:var(--tx)}
+.flt-on{
+  background:var(--accent);color:#fff;border-color:var(--accent);
+}
+.flt-on:hover{color:#fff;border-color:var(--accent)}
+.flt-sep{
+  flex-shrink:0;width:1px;height:20px;background:var(--border);
+  margin:0 4px;align-self:center;
+}
+.flt-sale.flt-on{background:#dc2626;border-color:#dc2626}
+.flt-clear{
+  flex-shrink:0;font-size:11px;color:var(--accent);
+  padding:5px 10px;background:transparent;border:none;font-weight:600;
+  white-space:nowrap;
+}
+.flt-clear:hover{text-decoration:underline}
+.result-meta{
+  font-size:11px;color:var(--tx3);padding:6px 20px 2px;
+  letter-spacing:.02em;
+}
+.link-btn{
+  background:none;color:var(--accent);font-size:13px;font-weight:500;
+  text-decoration:underline;cursor:pointer;
+}
+
+/* R1 — card additions */
+.card-conf{
+  display:inline-block;width:6px;height:6px;border-radius:50%;
+  margin-right:6px;vertical-align:middle;flex-shrink:0;
+}
+.card-fmt{
+  position:absolute;bottom:8px;left:8px;
+  font-size:9px;font-weight:700;letter-spacing:.08em;
+  background:rgba(0,0,0,.7);color:#fff;padding:2px 7px;border-radius:3px;
+  text-transform:uppercase;
+}
+.card-sale{
+  position:absolute;top:8px;left:8px;
+  font-size:9px;font-weight:700;letter-spacing:.08em;
+  background:var(--accent);color:#fff;padding:2px 6px;border-radius:3px;
+}
+
+/* R1 — collection modal */
+.col-modal-body{padding:20px}
+.col-modal-body h3{font-family:var(--serif);font-size:22px;margin-bottom:6px}
+.col-modal-body p.col-hint{font-size:12px;color:var(--tx3);margin-bottom:16px;line-height:1.5}
+.col-type-row{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;
+}
+.col-type-btn{
+  padding:14px 12px;text-align:left;
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  cursor:pointer;transition:all .15s;
+}
+.col-type-btn:hover{border-color:var(--border2)}
+.col-type-btn.active{border-color:var(--accent);background:var(--accent-bg)}
+.col-type-btn strong{display:block;font-size:13px;margin-bottom:2px}
+.col-type-btn span{font-size:11px;color:var(--tx3);line-height:1.4}
+.col-list{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.col-list-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 12px;background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);font-size:13px;
+}
+.col-list-row span{display:flex;align-items:center;gap:8px;color:var(--tx)}
+.col-list-row .col-meta{font-size:11px;color:var(--tx3)}
+.col-list-row button{
+  font-size:11px;color:var(--accent);padding:4px 8px;
+}
+.col-list-row button:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+// ============================================================================
+// STATE & STORAGE
+// ============================================================================
+const STORAGE_KEY = 'vinyl_radar_v2';
+const STORAGE_KEY_LEGACY = 'vinyl_radar_v1';
+const SETTINGS_KEY = 'vinyl_radar_settings_v1';
+const COLLECTIONS_KEY = 'vinyl_radar_collections_v1';
+const FILTERS_KEY = 'vinyl_radar_filters_v1';
+const SCHEMA_VERSION = 2;
+
+let state = {
+  records: [],
+  settings: { discogsToken: '', currency: 'EUR' },
+  view: 'library',
+  scanning: false,
+  lookup: null,
+  detail: null,
+  editing: null,
+  search: '',
+  sort: 'dateAdded',
+  toast: null,
+  filters: {
+    formats: [],
+    genres: [],
+    decades: [],
+    condMin: null,
+    countries: [],
+    forSale: false,
+    tags: [],
+  },
+  collections: [],
+  activeCollection: null,
+  collectionModal: null,
+};
+
+function loadState() {
+  try {
+    let raw = localStorage.getItem(STORAGE_KEY);
+    let needsMigrate = false;
+    if (!raw) {
+      raw = localStorage.getItem(STORAGE_KEY_LEGACY);
+      if (raw) needsMigrate = true;
+    }
+    if (raw) state.records = JSON.parse(raw);
+    const s = localStorage.getItem(SETTINGS_KEY);
+    if (s) Object.assign(state.settings, JSON.parse(s));
+    const c = localStorage.getItem(COLLECTIONS_KEY);
+    if (c) state.collections = JSON.parse(c);
+    const f = localStorage.getItem(FILTERS_KEY);
+    if (f) {
+      const parsed = JSON.parse(f);
+      Object.assign(state.filters, parsed.filters || {});
+      if (parsed.sort) state.sort = parsed.sort;
+      if (parsed.activeCollection !== undefined) state.activeCollection = parsed.activeCollection;
+    }
+
+    state.records = state.records.map(migrateRecord);
+    if (needsMigrate) {
+      saveRecords();
+      localStorage.removeItem(STORAGE_KEY_LEGACY);
+    }
+  } catch(e) { console.warn('Load error:', e); }
+}
+
+function migrateRecord(r) {
+  if (!r) return r;
+  const out = { ...r };
+  if (r.vinylCondition && !r.media_condition) out.media_condition = r.vinylCondition;
+  if (r.sleeveCondition && !r.sleeve_condition) out.sleeve_condition = r.sleeveCondition;
+  if (out.location == null) out.location = '';
+  if (out.pressing_notes == null) out.pressing_notes = '';
+  if (out.purchase_source == null) out.purchase_source = '';
+  if (!Array.isArray(out.tags)) out.tags = [];
+  if (out.for_sale == null) out.for_sale = false;
+  if (out.original_year == null) out.original_year = null;
+  if (out.confidence == null) out.confidence = r.discogsId ? 'high' : (r.barcode ? 'medium' : 'low');
+  if (out.updated_at == null) out.updated_at = r.dateAdded || new Date().toISOString();
+  if (out.schema_version == null) out.schema_version = SCHEMA_VERSION;
+  return out;
+}
+
+function saveRecords() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.records));
+}
+
+function saveSettings() {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(state.settings));
+}
+
+function saveCollections() {
+  localStorage.setItem(COLLECTIONS_KEY, JSON.stringify(state.collections));
+}
+
+function saveFilters() {
+  localStorage.setItem(FILTERS_KEY, JSON.stringify({
+    filters: state.filters,
+    sort: state.sort,
+    activeCollection: state.activeCollection,
+  }));
+}
+
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2, 8);
+}
+
+// ============================================================================
+// VALUATION
+// ============================================================================
+const CONDITIONS = {
+  'M':   { mult: 1.00, label: 'Mint',            desc: 'Absolutely perfect, sealed' },
+  'NM':  { mult: 0.85, label: 'Near Mint',        desc: 'No visible flaws' },
+  'VG+': { mult: 0.65, label: 'Very Good Plus',   desc: 'Light marks, plays well' },
+  'VG':  { mult: 0.45, label: 'Very Good',        desc: 'Surface noise, no skips' },
+  'G+':  { mult: 0.25, label: 'Good Plus',        desc: 'Heavy wear, plays through' },
+  'G':   { mult: 0.15, label: 'Good',             desc: 'Significant wear' },
+  'F':   { mult: 0.08, label: 'Fair',             desc: 'Damaged but playable' },
+  'P':   { mult: 0.04, label: 'Poor',             desc: 'Severely damaged' },
+};
+const COND_ORDER = ['M','NM','VG+','VG','G+','G','F','P'];
+
+function calcValue(r) {
+  if (!r.market || !r.market.median) return null;
+  const mc = r.media_condition || r.vinylCondition;
+  const sc = r.sleeve_condition || r.sleeveCondition;
+  const vm = (CONDITIONS[mc]?.mult ?? 0.5);
+  const sm = (CONDITIONS[sc]?.mult ?? 0.5);
+  const blend = vm * 0.7 + sm * 0.3;
+  const est = r.market.median * blend;
+  const lo = (r.market.low ?? r.market.median * 0.6) * blend;
+  const hi = (r.market.high ?? r.market.median * 1.4) * blend;
+  const sales = r.market.salesCount ?? 0;
+  let conf = 'low';
+  if (sales > 50) conf = 'high';
+  else if (sales > 10) conf = 'medium';
+  return { estimate: Math.round(est*100)/100, low: Math.round(lo*100)/100, high: Math.round(hi*100)/100, confidence: conf, salesCount: sales };
+}
+
+function fmt(amount, cur) {
+  if (amount == null) return '—';
+  return new Intl.NumberFormat('en-NL', { style:'currency', currency: cur||'EUR', maximumFractionDigits:2 }).format(amount);
+}
+
+// ============================================================================
+// API LOOKUPS
+// ============================================================================
+async function lookupBarcode(barcode) {
+  const token = state.settings.discogsToken;
+  const result = { barcode, artist:null, title:null, year:null, genre:null, label:null, catalogNumber:null, country:null, coverImage:null, tracklist:[], discogsId:null, discogsUri:null, market:null, source:null };
+
+  // Discogs with token
+  if (token) {
+    try {
+      const sr = await fetch(`https://api.discogs.com/database/search?barcode=${barcode}&format=Vinyl&type=release`, {
+        headers: { 'User-Agent':'VinylRadar/1.0', 'Authorization':`Discogs token=${token}` }
+      });
+      if (sr.ok) {
+        const sd = await sr.json();
+        if (sd.results && sd.results[0]) {
+          const rel = await fetch(`https://api.discogs.com/releases/${sd.results[0].id}`, {
+            headers: { 'User-Agent':'VinylRadar/1.0', 'Authorization':`Discogs token=${token}` }
+          }).then(r=>r.json());
+
+          result.artist = (rel.artists||[]).map(a=>a.name).join(', ');
+          result.title = rel.title;
+          result.year = rel.year;
+          result.genre = (rel.genres||[]).join(', ');
+          result.label = rel.labels?.[0]?.name;
+          result.catalogNumber = rel.labels?.[0]?.catno;
+          result.country = rel.country;
+          result.coverImage = rel.images?.[0]?.uri || rel.thumb;
+          result.tracklist = (rel.tracklist||[]).map(t=>({ position:t.position, title:t.title, duration:t.duration }));
+          result.discogsId = rel.id;
+          result.discogsUri = rel.uri;
+          result.source = 'discogs';
+
+          // Market data
+          const [statsRes, pricesRes] = await Promise.all([
+            fetch(`https://api.discogs.com/marketplace/stats/${rel.id}?curr_abbr=EUR`, {
+              headers: { 'User-Agent':'VinylRadar/1.0', 'Authorization':`Discogs token=${token}` }
+            }).then(r=>r.ok?r.json():null).catch(()=>null),
+            fetch(`https://api.discogs.com/marketplace/price_suggestions/${rel.id}`, {
+              headers: { 'User-Agent':'VinylRadar/1.0', 'Authorization':`Discogs token=${token}` }
+            }).then(r=>r.ok?r.json():null).catch(()=>null)
+          ]);
+
+          let median = statsRes?.lowest_price?.value ?? null;
+          let low = null, high = null;
+          if (pricesRes?.['Near Mint (NM or M-)']) median = pricesRes['Near Mint (NM or M-)'].value;
+          if (pricesRes?.['Very Good Plus (VG+)']) low = pricesRes['Very Good Plus (VG+)'].value;
+          if (pricesRes?.['Mint (M)']) high = pricesRes['Mint (M)'].value;
+
+          if (median) {
+            result.market = {
+              median, low: low ?? median*0.7, high: high ?? median*1.3,
+              salesCount: rel.num_for_sale ?? 0, currency: 'EUR',
+              fetched_at: new Date().toISOString()
+            };
+          }
+          return result;
+        }
+      }
+    } catch(e) { console.warn('Discogs auth lookup failed:', e); }
+  }
+
+  // Discogs without token
+  try {
+    const sr = await fetch(`https://api.discogs.com/database/search?barcode=${barcode}&format=Vinyl&type=release`, {
+      headers: { 'User-Agent':'VinylRadar/1.0' }
+    });
+    if (sr.ok) {
+      const sd = await sr.json();
+      const r0 = sd.results?.[0];
+      if (r0) {
+        const parts = r0.title?.split(' - ') || [];
+        result.artist = parts[0]; result.title = parts.slice(1).join(' - ') || r0.title;
+        result.year = r0.year; result.genre = (r0.genre||[]).join(', ');
+        result.label = r0.label?.[0]; result.catalogNumber = r0.catno;
+        result.country = r0.country; result.coverImage = r0.cover_image;
+        result.discogsId = r0.id; result.discogsUri = 'https://www.discogs.com' + r0.uri;
+        result.source = 'discogs-public';
+        return result;
+      }
+    }
+  } catch(e) { console.warn('Discogs public failed:', e); }
+
+  // MusicBrainz fallback
+  try {
+    const mr = await fetch(`https://musicbrainz.org/ws/2/release/?query=barcode:${barcode}&fmt=json`, {
+      headers: { 'User-Agent':'VinylRadar/1.0 (personal-use)' }
+    });
+    if (mr.ok) {
+      const md = await mr.json();
+      const r0 = md.releases?.[0];
+      if (r0) {
+        result.artist = (r0['artist-credit']||[]).map(a=>a.name).join(', ');
+        result.title = r0.title; result.year = r0.date?.substring(0,4);
+        result.country = r0.country; result.source = 'musicbrainz';
+        return result;
+      }
+    }
+  } catch(e) { console.warn('MusicBrainz failed:', e); }
+
+  return null;
+}
+
+// ============================================================================
+// ICONS (SVG strings)
+// ============================================================================
+const IC = {
+  disc: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><path d="M12 2a10 10 0 0 1 7.07 2.93"/></svg>`,
+  plus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+  search: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+  x: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+  music: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`,
+  library: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`,
+  chart: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`,
+  heart: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
+  settings: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
+  camera: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>`,
+  download: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
+  upload: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`,
+  edit: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
+  trash: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`,
+  ext: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`,
+  alert: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+  loader: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`,
+  check: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+  tagSmall: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:10px;height:10px;display:inline-block;vertical-align:-1px"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`,
+  folder: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`,
+};
+
+function icon(name, size) {
+  return `<span class="icon" style="width:${size||16}px;height:${size||16}px">${IC[name]||''}</span>`;
+}
+
+// ============================================================================
+// RENDERING
+// ============================================================================
+function render() {
+  const app = document.getElementById('app');
+  app.innerHTML = renderHeader() + renderTabs() + `<div class="app"><div class="content">${renderView()}</div></div>` + renderModals() + renderToast();
+  bindEvents();
+}
+
+function renderHeader() {
+  return `<header class="header"><div class="header-inner">
+    <div class="logo">
+      <span style="color:var(--tx)">${IC.disc}</span>
+      <div class="logo-text"><h1>Vinyl Radar</h1><p>Collection Tracker</p></div>
+    </div>
+    <button class="btn-add" id="btn-scan">${icon('plus',16)} Add</button>
+  </div></header>`;
+}
+
+function renderTabs() {
+  const tabs = [
+    { id:'library', label:'Library', ic:'library' },
+    { id:'dashboard', label:'Stats', ic:'chart' },
+    { id:'wishlist', label:'Wishlist', ic:'heart' },
+    { id:'settings', label:'Settings', ic:'settings' },
+  ];
+  return `<nav class="tabs">${tabs.map(t =>
+    `<button class="tab${state.view===t.id?' active':''}" data-view="${t.id}">${icon(t.ic,15)} ${t.label}</button>`
+  ).join('')}</nav>`;
+}
+
+function renderView() {
+  switch(state.view) {
+    case 'library': return renderLibrary();
+    case 'dashboard': return renderDashboard();
+    case 'wishlist': return renderWishlist();
+    case 'settings': return renderSettings();
+    default: return '';
+  }
+}
+
+// ---- Library ----
+const COND_RANK = { 'M':8,'NM':7,'VG+':6,'VG':5,'G+':4,'G':3,'F':2,'P':1 };
+
+function getActiveCollection() {
+  if (!state.activeCollection) return null;
+  return state.collections.find(c => c.id === state.activeCollection) || null;
+}
+
+function recordFormat(r) {
+  if (r.format) return r.format;
+  if ((r.formatDetails || []).some(f => /cd/i.test(f.detail || ''))) return 'CD';
+  if ((r.formatDetails || []).some(f => /cassette/i.test(f.detail || ''))) return 'Cassette';
+  return 'Vinyl';
+}
+
+function applyFilters(records, filters) {
+  let out = records;
+  if (filters.formats?.length) {
+    out = out.filter(r => filters.formats.includes(recordFormat(r)));
+  }
+  if (filters.genres?.length) {
+    out = out.filter(r => {
+      const gs = (r.genre || '').split(',').map(g => g.trim()).filter(Boolean);
+      return filters.genres.some(g => gs.includes(g));
+    });
+  }
+  if (filters.decades?.length) {
+    out = out.filter(r => r.year && filters.decades.includes(Math.floor(r.year/10)*10));
+  }
+  if (filters.condMin) {
+    const min = COND_RANK[filters.condMin] || 0;
+    out = out.filter(r => (COND_RANK[r.media_condition || r.vinylCondition] || 0) >= min);
+  }
+  if (filters.countries?.length) {
+    out = out.filter(r => filters.countries.includes(r.country));
+  }
+  if (filters.forSale) {
+    out = out.filter(r => r.for_sale);
+  }
+  if (filters.tags?.length) {
+    out = out.filter(r => Array.isArray(r.tags) && filters.tags.some(t => r.tags.includes(t)));
+  }
+  return out;
+}
+
+function getFiltered() {
+  const q = state.search.toLowerCase().trim();
+  let base = state.records.filter(r => !r.wishlist);
+
+  const col = getActiveCollection();
+  if (col) {
+    if (col.type === 'manual') {
+      const ids = new Set(col.recordIds || []);
+      base = base.filter(r => ids.has(r.id));
+    } else if (col.type === 'filter' && col.filters) {
+      base = applyFilters(base, col.filters);
+    }
+  }
+
+  base = applyFilters(base, state.filters);
+
+  if (q) {
+    base = base.filter(r => {
+      const haystack = [
+        r.artist, r.title, r.label, r.notes, r.pressing_notes,
+        r.purchase_source, r.location, r.genre, r.catalogNumber, r.country,
+        Array.isArray(r.tags) ? r.tags.join(' ') : ''
+      ].filter(Boolean).join(' ').toLowerCase();
+      return haystack.includes(q);
+    });
+  }
+
+  return base.sort((a,b) => {
+    switch(state.sort) {
+      case 'artist': return (a.artist||'').localeCompare(b.artist||'');
+      case 'title': return (a.title||'').localeCompare(b.title||'');
+      case 'year': return (b.year||0)-(a.year||0);
+      case 'yearAsc': return (a.year||9999)-(b.year||9999);
+      case 'value': return (calcValue(b)?.estimate||0)-(calcValue(a)?.estimate||0);
+      case 'paid': return (b.purchasePrice||0)-(a.purchasePrice||0);
+      default: return new Date(b.dateAdded||0)-new Date(a.dateAdded||0);
+    }
+  });
+}
+
+function availableFilterOptions() {
+  const owned = state.records.filter(r => !r.wishlist);
+  const formats = new Set();
+  const genres = new Set();
+  const decades = new Set();
+  const countries = new Set();
+  const tags = new Set();
+  owned.forEach(r => {
+    formats.add(recordFormat(r));
+    (r.genre || '').split(',').map(g => g.trim()).filter(Boolean).forEach(g => genres.add(g));
+    if (r.year) decades.add(Math.floor(r.year/10)*10);
+    if (r.country) countries.add(r.country);
+    if (Array.isArray(r.tags)) r.tags.forEach(t => tags.add(t));
+  });
+  return {
+    formats: [...formats].sort(),
+    genres: [...genres].sort(),
+    decades: [...decades].sort((a,b)=>a-b),
+    countries: [...countries].sort(),
+    tags: [...tags].sort(),
+  };
+}
+
+function activeFilterCount() {
+  const f = state.filters;
+  let n = 0;
+  n += (f.formats||[]).length;
+  n += (f.genres||[]).length;
+  n += (f.decades||[]).length;
+  if (f.condMin) n++;
+  n += (f.countries||[]).length;
+  if (f.forSale) n++;
+  n += (f.tags||[]).length;
+  return n;
+}
+
+function toggleFilter(group, value) {
+  const arr = state.filters[group] || [];
+  const idx = arr.indexOf(value);
+  if (idx >= 0) arr.splice(idx, 1);
+  else arr.push(value);
+  state.filters[group] = arr;
+  saveFilters();
+}
+
+function clearFilters() {
+  state.filters = { formats:[], genres:[], decades:[], condMin:null, countries:[], forSale:false, tags:[] };
+  saveFilters();
+}
+
+function renderLibrary() {
+  const owned = state.records.filter(r => !r.wishlist);
+  if (owned.length === 0) {
+    return `<div class="empty">${IC.disc}<h2>Your shelf is empty</h2><p>Scan the barcode on the back of any record sleeve to start building your collection.</p><button class="btn-primary" id="btn-scan-empty">Scan first record</button></div>`;
+  }
+  const recs = getFiltered();
+  const collectionBar = renderCollectionBar();
+  const filterBar = renderFilterChips();
+  const resultMeta = renderResultMeta(owned.length, recs.length);
+  const grid = recs.length === 0
+    ? `<p style="text-align:center;color:var(--tx3);padding:48px 0">No records match your filters.<br><button class="link-btn" id="btn-clear-filters" style="margin-top:12px">Clear all filters</button></p>`
+    : `<div class="grid anim-stagger">${recs.map(r => renderCard(r)).join('')}</div>`;
+
+  return `${collectionBar}
+  <div class="search-bar">
+    <div class="search-input">${IC.search}<input type="text" id="search-field" placeholder="Search artist, label, tags, location..." value="${esc(state.search)}"></div>
+    <select class="sort-select" id="sort-field">
+      <option value="dateAdded"${state.sort==='dateAdded'?' selected':''}>Recently added</option>
+      <option value="artist"${state.sort==='artist'?' selected':''}>Artist A–Z</option>
+      <option value="title"${state.sort==='title'?' selected':''}>Title A–Z</option>
+      <option value="year"${state.sort==='year'?' selected':''}>Year (newest)</option>
+      <option value="yearAsc"${state.sort==='yearAsc'?' selected':''}>Year (oldest)</option>
+      <option value="value"${state.sort==='value'?' selected':''}>Value (high → low)</option>
+      <option value="paid"${state.sort==='paid'?' selected':''}>Paid (high → low)</option>
+    </select>
+  </div>
+  ${filterBar}
+  ${resultMeta}
+  ${grid}`;
+}
+
+function renderCollectionBar() {
+  const active = getActiveCollection();
+  const others = state.collections;
+  if (!others.length && !active) {
+    return `<div class="col-bar">
+      <button class="col-chip col-chip-active" data-col="">All records</button>
+      <button class="col-chip col-chip-new" id="btn-new-collection">${icon('plus',12)} New collection</button>
+    </div>`;
+  }
+  return `<div class="col-bar">
+    <button class="col-chip${!active?' col-chip-active':''}" data-col="">All</button>
+    ${others.map(c => `<button class="col-chip${active?.id===c.id?' col-chip-active':''}" data-col="${c.id}">${esc(c.name)}</button>`).join('')}
+    <button class="col-chip col-chip-new" id="btn-new-collection">${icon('plus',12)} New</button>
+    ${active?`<button class="col-chip col-chip-manage" id="btn-manage-collection" data-col="${active.id}">Manage</button>`:''}
+  </div>`;
+}
+
+function renderFilterChips() {
+  const opts = availableFilterOptions();
+  const f = state.filters;
+  const chips = [];
+
+  opts.formats.forEach(fmt => {
+    const on = f.formats.includes(fmt);
+    chips.push(`<button class="flt-chip${on?' flt-on':''}" data-flt-group="formats" data-flt-val="${esc(fmt)}">${esc(fmt)}</button>`);
+  });
+  if (opts.formats.length && (opts.decades.length || opts.genres.length)) chips.push('<span class="flt-sep"></span>');
+
+  opts.decades.forEach(d => {
+    const on = f.decades.includes(d);
+    chips.push(`<button class="flt-chip${on?' flt-on':''}" data-flt-group="decades" data-flt-val="${d}">${d}s</button>`);
+  });
+  if (opts.decades.length && opts.genres.length) chips.push('<span class="flt-sep"></span>');
+
+  opts.genres.slice(0, 12).forEach(g => {
+    const on = f.genres.includes(g);
+    chips.push(`<button class="flt-chip${on?' flt-on':''}" data-flt-group="genres" data-flt-val="${esc(g)}">${esc(g)}</button>`);
+  });
+  if (opts.genres.length && opts.tags.length) chips.push('<span class="flt-sep"></span>');
+
+  opts.tags.slice(0, 10).forEach(t => {
+    const on = f.tags.includes(t);
+    chips.push(`<button class="flt-chip flt-tag${on?' flt-on':''}" data-flt-group="tags" data-flt-val="${esc(t)}">${IC.tagSmall} ${esc(t)}</button>`);
+  });
+  if (opts.tags.length) chips.push('<span class="flt-sep"></span>');
+
+  ['NM','VG+','VG','G+'].forEach(c => {
+    const on = f.condMin === c;
+    chips.push(`<button class="flt-chip${on?' flt-on':''}" data-flt-cond="${c}">${c}+</button>`);
+  });
+  chips.push('<span class="flt-sep"></span>');
+
+  const forSaleOn = f.forSale;
+  chips.push(`<button class="flt-chip flt-sale${forSaleOn?' flt-on':''}" data-flt-forsale="1">For sale</button>`);
+
+  if (opts.countries.length > 1) {
+    chips.push('<span class="flt-sep"></span>');
+    opts.countries.slice(0, 8).forEach(co => {
+      const on = f.countries.includes(co);
+      chips.push(`<button class="flt-chip${on?' flt-on':''}" data-flt-group="countries" data-flt-val="${esc(co)}">${esc(co)}</button>`);
+    });
+  }
+
+  const active = activeFilterCount();
+  const clearBtn = active > 0 ? `<button class="flt-clear" id="btn-clear-filters">Clear (${active})</button>` : '';
+
+  return `<div class="flt-bar-wrap">
+    <div class="flt-bar">${chips.join('')}</div>
+    ${clearBtn}
+  </div>`;
+}
+
+function renderResultMeta(total, shown) {
+  if (shown === total) return '';
+  return `<div class="result-meta">Showing ${shown} of ${total} records</div>`;
+}
+
+function renderCard(r) {
+  const v = calcValue(r);
+  const cover = r.coverImage
+    ? `<img src="${esc(r.coverImage)}" alt="${esc(r.title)}" loading="lazy">`
+    : `<div class="placeholder">${IC.music}</div>`;
+  const conf = r.confidence ? `<span class="card-conf conf-${r.confidence}" title="${r.confidence} confidence"></span>` : '';
+  const fmtName = recordFormat(r);
+  const fmtBadge = fmtName !== 'Vinyl' ? `<span class="card-fmt">${esc(fmtName)}</span>` : '';
+  const saleBadge = r.for_sale ? `<span class="card-sale">SALE</span>` : '';
+  return `<button class="record-card" data-detail="${r.id}">
+    <div class="card-cover">${cover}${r.wishlist?'<div class="badge-want">Want</div>':''}${fmtBadge}${saleBadge}</div>
+    <div class="card-title">${conf}${esc(r.title||'Unknown')}</div>
+    <div class="card-artist">${esc(r.artist||'Unknown artist')}</div>
+    <div class="card-meta">
+      <span class="card-year">${r.year||'—'}</span>
+      ${v?`<span class="card-value">${fmt(v.estimate)}</span>`:''}
+    </div>
+  </button>`;
+}
+
+// ---- Dashboard ----
+function renderDashboard() {
+  const owned = state.records.filter(r => !r.wishlist);
+  if (owned.length === 0) return `<div class="empty">${IC.chart}<p style="color:var(--tx3)">Add records to see your collection stats.</p></div>`;
+
+  const totalEst = owned.reduce((s,r) => s+(calcValue(r)?.estimate||0), 0);
+  const totalPaid = owned.reduce((s,r) => s+(r.purchasePrice||0), 0);
+  const profit = totalEst - totalPaid;
+  const profitClass = profit >= 0 ? 'stat-accent-green' : 'stat-accent-red';
+
+  const fc = {};
+  owned.forEach(r => { const f = recordFormat(r); fc[f] = (fc[f]||0)+1; });
+  const fmts = Object.entries(fc).sort((a,b)=>b[1]-a[1]);
+  const maxF = Math.max(...fmts.map(x=>x[1]),1);
+
+  const gc = {};
+  owned.forEach(r => { const gs = r.genre?.split(',').map(g=>g.trim()).filter(Boolean)||[]; if(!gs.length) gs.push('Unknown'); gs.forEach(g => gc[g]=(gc[g]||0)+1); });
+  const topG = Object.entries(gc).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const maxG = Math.max(...topG.map(g=>g[1]),1);
+
+  const dc = {};
+  owned.forEach(r => { if(r.year){ const d=Math.floor(r.year/10)*10; dc[d]=(dc[d]||0)+1; }});
+  const decs = Object.entries(dc).sort((a,b)=>a[0]-b[0]);
+  const maxD = Math.max(...decs.map(d=>d[1]),1);
+
+  const top5 = [...owned].map(r=>({...r,_v:calcValue(r)?.estimate||0})).sort((a,b)=>b._v-a._v).slice(0,5);
+
+  const forSaleCount = owned.filter(r=>r.for_sale).length;
+  const valuedCount = owned.filter(r => r.market && r.market.median).length;
+  const staleThresh = 30 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  const staleCount = owned.filter(r => {
+    if (!r.market || !r.market.median) return false;
+    const t = r.market.fetched_at || r.dateAdded;
+    if (!t) return true;
+    return (now - new Date(t).getTime()) > staleThresh;
+  }).length;
+  const freshness = (valuedCount > 0 && staleCount > 0)
+    ? `<div class="info-box" style="margin-bottom:24px"><strong>${staleCount} of ${valuedCount} valuations are older than 30 days</strong><p>Market prices update over time. Open any record and re-save it to refresh its valuation.</p></div>`
+    : '';
+
+  return `${freshness}
+  <div class="stats-grid anim-stagger">
+    <div class="stat-card"><div class="stat-label">Records</div><div class="stat-value">${owned.length}</div><div class="stat-sub">in collection</div></div>
+    <div class="stat-card"><div class="stat-label">Total value</div><div class="stat-value">${fmt(totalEst)}</div><div class="stat-sub">estimated</div></div>
+    <div class="stat-card"><div class="stat-label">Total paid</div><div class="stat-value">${fmt(totalPaid)}</div><div class="stat-sub">purchases logged</div></div>
+    <div class="stat-card ${profitClass}"><div class="stat-label">${profit>=0?'Appreciation':'Loss'}</div><div class="stat-value">${fmt(Math.abs(profit))}</div><div class="stat-sub">${profit>=0?'in your favor':'on paper'}</div></div>
+  </div>
+  ${fmts.length > 1 ? `<h3 class="section-title">By format</h3>
+  <div style="margin-bottom:32px">${fmts.map(([f,c])=>`<div class="bar-row"><div class="bar-label"><span>${esc(f)}</span><span>${c}</span></div><div class="bar-track"><div class="bar-fill" style="width:${(c/maxF*100)}%"></div></div></div>`).join('')}</div>` : ''}
+  <h3 class="section-title">Top genres</h3>
+  <div style="margin-bottom:32px">${topG.map(([g,c])=>`<div class="bar-row"><div class="bar-label"><span>${esc(g)}</span><span>${c}</span></div><div class="bar-track"><div class="bar-fill" style="width:${(c/maxG*100)}%"></div></div></div>`).join('')}</div>
+  ${decs.length?`<h3 class="section-title">By decade</h3><div class="decade-chart">${decs.map(([d,c])=>`<div class="decade-bar"><div class="db-count">${c}</div><div class="db-fill" style="height:${(c/maxD*100)}%"></div><div class="db-label">${d}s</div></div>`).join('')}</div>`:''}
+  <h3 class="section-title">Most valuable</h3>
+  <div class="top-list anim-stagger">${top5.map((r,i)=>`<div class="top-item">
+    <div class="top-rank">${i+1}</div>
+    <div class="top-cover">${r.coverImage?`<img src="${esc(r.coverImage)}" alt="">`:''}</div>
+    <div class="top-info"><div class="top-title">${esc(r.title)}</div><div class="top-artist">${esc(r.artist)}</div></div>
+    <div class="top-value">${fmt(r._v)}</div>
+  </div>`).join('')}</div>
+  ${forSaleCount > 0 ? `<p style="text-align:center;color:var(--tx3);margin-top:24px;font-size:13px">${forSaleCount} record${forSaleCount===1?'':'s'} marked for sale</p>` : ''}`;
+}
+
+// ---- Wishlist ----
+function renderWishlist() {
+  const wl = state.records.filter(r => r.wishlist);
+  if (!wl.length) return `<div class="empty">${IC.heart}<h2>No wants yet</h2><p>When adding a record, check "wishlist" to track it without owning it.</p></div>`;
+  return `<div class="grid anim-stagger">${wl.map(r => renderCard(r)).join('')}</div>`;
+}
+
+// ---- Settings ----
+function renderSettings() {
+  return `<div class="settings-section">
+    <h3>Discogs integration</h3>
+    <p>A free personal access token unlocks full tracklists, cover art, market prices, and condition-based valuation. The app works without one, but with limited data.</p>
+    <div class="field"><label class="field-label">Personal access token</label>
+      <input type="password" id="discogs-token" placeholder="paste your token here" value="${esc(state.settings.discogsToken)}" style="font-family:var(--mono)">
+    </div>
+    <a href="https://www.discogs.com/settings/developers" target="_blank">${icon('ext',12)} Generate a token at discogs.com/settings/developers</a>
+  </div>
+  <div class="settings-section">
+    <h3>Backup &amp; export</h3>
+    <p>Your collection lives in this device's local storage. Export regularly — especially before clearing browser data.</p>
+    <div class="btn-row">
+      <button id="btn-export-json">${icon('download')} JSON backup</button>
+      <button id="btn-export-csv">${icon('download')} CSV export</button>
+      <button id="btn-export-discogs">${icon('download')} Discogs CSV</button>
+      <button id="btn-import-json">${icon('upload')} Restore JSON</button>
+    </div>
+    <p style="font-size:12px;color:var(--tx3);margin-top:8px">Discogs CSV uses Discogs' bulk-import column format. You can re-upload it to your Discogs collection if you ever want to migrate away.</p>
+    <input type="file" id="file-import" accept=".json" style="display:none">
+  </div>
+  <div class="settings-section">
+    <h3>Google Drive sync</h3>
+    <div class="info-box"><strong>Coming in v2</strong><p>For now, save your JSON backup to your Google Drive folder manually. Once this app runs on its own domain with OAuth, auto-sync will be added.</p></div>
+  </div>
+  <div class="settings-section">
+    <h3>About</h3>
+    <p><strong>Vinyl Radar</strong> v1.2 — your private vinyl collection tracker.</p>
+    <p>${state.records.length} records · ${state.records.filter(r=>r.wishlist).length} on wishlist · ${state.records.filter(r=>r.for_sale).length} marked for sale · ${state.collections.length} collection${state.collections.length===1?'':'s'}</p>
+    <p style="font-size:11px;color:var(--tx3);margin-top:8px">Data: Discogs · MusicBrainz · Goldmine grading standard</p>
+  </div>`;
+}
+
+// ---- Modals ----
+function renderModals() {
+  let html = '';
+  if (state.scanning) html += renderScanner();
+  if (state.lookup) html += renderLookupModal();
+  if (state.detail) html += renderDetailModal();
+  if (state.editing) html += renderEditModal();
+  if (state.collectionModal) html += renderCollectionModal();
+  return html;
+}
+
+function renderScanner() {
+  return `<div class="scanner" id="scanner">
+    <div class="scanner-header">
+      <button id="scanner-close">${IC.x}</button>
+      <h2>Scan barcode</h2>
+      <button class="btn-text" id="scanner-toggle-manual">Manual</button>
+    </div>
+    <div class="scanner-body" id="scanner-body">
+      <div id="scanner-camera-area" style="width:100%;height:100%;position:relative">
+        <video id="scanner-video" playsinline muted style="width:100%;height:100%;object-fit:cover"></video>
+        <div class="scan-overlay"><div class="scan-frame">
+          <div class="scan-corner tl"></div><div class="scan-corner tr"></div>
+          <div class="scan-corner bl"></div><div class="scan-corner br"></div>
+          <div class="scan-line"></div>
+        </div></div>
+        <div class="scanner-hint">Hold barcode steady within frame</div>
+      </div>
+      <div id="scanner-manual-area" style="display:none" class="scanner-center">
+        <p>Enter the barcode number from the back of the sleeve</p>
+        <input type="text" inputmode="numeric" id="manual-barcode" class="manual-input" placeholder="e.g. 0602567890123">
+        <button class="btn-primary" id="btn-manual-lookup" style="width:100%;margin-top:16px;justify-content:center">Look up</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderLookupModal() {
+  const s = state.lookup;
+  if (s.loading) {
+    return `<div class="modal-overlay"><div class="modal"><div class="loading-screen">
+      ${IC.loader}<h3>Looking up barcode</h3><p>${esc(s.barcode)}</p>
+    </div></div></div>`;
+  }
+  return renderRecordForm(s.result, s.error, false, s.duplicate);
+}
+
+function renderEditModal() {
+  return renderRecordForm(state.editing, null, true, null);
+}
+
+function renderRecordForm(data, error, isEdit, duplicate) {
+  const d = data || {};
+  const v = d.market ? calcValue(d) : null;
+  const cover = d.coverImage
+    ? `<img src="${esc(d.coverImage)}" style="width:100%;height:100%;object-fit:cover">`
+    : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--bg2)">${IC.music}</div>`;
+  const heroBg = d.coverImage ? `<div class="modal-hero-bg"><img src="${esc(d.coverImage)}"></div>` : '';
+
+  const condOpts = COND_ORDER.map(c => `<option value="${c}"${(d.vinylCondition||'NM')===c?' selected':''}>${c} – ${CONDITIONS[c].label}</option>`).join('');
+  const condOpts2 = COND_ORDER.map(c => `<option value="${c}"${(d.sleeveCondition||'NM')===c?' selected':''}>${c} – ${CONDITIONS[c].label}</option>`).join('');
+
+  let valueCard = '';
+  if (v) {
+    valueCard = `<div class="value-card">
+      <div style="display:flex;justify-content:space-between;align-items:center"><span class="label">Estimated value</span><span class="confidence ${v.confidence}">${v.confidence} confidence</span></div>
+      <div class="amount">${fmt(v.estimate)}</div>
+      <div class="range">Range: ${fmt(v.low)} – ${fmt(v.high)}</div>
+    </div>`;
+  }
+
+  let tracklistHtml = '';
+  if (d.tracklist && d.tracklist.length) {
+    tracklistHtml = `<div class="tracklist-header">Tracklist</div><div class="tracklist">${d.tracklist.map(t =>
+      `<div class="track"><span class="track-pos">${esc(t.position||'')}</span><span class="track-title">${esc(t.title||'')}</span>${t.duration?`<span class="track-dur">${esc(t.duration)}</span>`:''}</div>`
+    ).join('')}</div>`;
+  }
+
+  const alertHtml = error && !d.title ? `<div class="alert">${IC.alert}<p>${esc(error)}</p></div>` : '';
+
+  const dupHtml = duplicate ? `<div class="dup-notice">
+      <div class="dup-icon">${IC.alert}</div>
+      <div class="dup-body">
+        <strong>You already own this</strong>
+        <span>${esc(duplicate.artist||'Unknown')} — ${esc(duplicate.title||'Unknown')}${duplicate.dateAdded?` · added ${new Date(duplicate.dateAdded).toLocaleDateString()}`:''}</span>
+      </div>
+      <button class="dup-view" type="button" data-dup="${duplicate.id}">View</button>
+    </div>` : '';
+
+  const manualFields = (!d.title || !d.artist) ? `
+    <div class="field"><label class="field-label">Artist</label><input type="text" id="form-artist" value="${esc(d.artist||'')}"></div>
+    <div class="field"><label class="field-label">Title</label><input type="text" id="form-title" value="${esc(d.title||'')}"></div>` : '';
+
+  const tagsValue = Array.isArray(d.tags) ? d.tags.join(', ') : '';
+
+  return `<div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-hero">${heroBg}
+        <button class="modal-close" id="modal-close">${IC.x}</button>
+        <div class="modal-cover">${cover}</div>
+        <div class="modal-info">
+          <div class="modal-title">${esc(d.title||'Unknown title')}</div>
+          <div class="modal-artist">${esc(d.artist||'Unknown artist')}</div>
+          <div class="modal-tags">${d.year?`<span>${d.year}</span>`:''}${d.label?`<span>· ${esc(d.label)}</span>`:''}${d.country?`<span>· ${esc(d.country)}</span>`:''}</div>
+        </div>
+      </div>
+      <div class="modal-body">
+        ${dupHtml}${alertHtml}${manualFields}
+        <div class="field-row">
+          <div class="field"><label class="field-label">Vinyl condition</label><select id="form-vinyl-cond">${condOpts}</select></div>
+          <div class="field"><label class="field-label">Sleeve condition</label><select id="form-sleeve-cond">${condOpts2}</select></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label class="field-label">Purchase price</label><div class="field-price"><span class="currency">€</span><input type="number" step="0.01" id="form-price" placeholder="0.00" value="${d.purchasePrice||''}"></div></div>
+          <div class="field"><label class="field-label">Purchase date</label><input type="date" id="form-date" value="${esc(d.purchaseDate||'')}"></div>
+        </div>
+        <div class="field"><label class="field-label">Purchase source</label><input type="text" id="form-source" placeholder="Boomkat, record fair, gift from..." value="${esc(d.purchase_source||'')}"></div>
+        <div class="field"><label class="field-label">Storage location</label><input type="text" id="form-location" placeholder="Shelf A, crate 3, lent to..." value="${esc(d.location||'')}"></div>
+        <div class="field"><label class="field-label">Pressing notes</label><textarea id="form-pressing" placeholder="Original UK Harvest pressing, DMM cut, 180g reissue...">${esc(d.pressing_notes||'')}</textarea></div>
+        <div class="field"><label class="field-label">Tags <span style="color:var(--tx3);font-weight:400;text-transform:none;letter-spacing:0">(comma-separated)</span></label><input type="text" id="form-tags" placeholder="needs cleaning, birthday gift, for trade" value="${esc(tagsValue)}"></div>
+        <div class="field"><label class="field-label">Notes</label><textarea id="form-notes" placeholder="Anything else worth remembering">${esc(d.notes||'')}</textarea></div>
+        <label class="checkbox-label"><input type="checkbox" id="form-for-sale" ${d.for_sale?'checked':''}> Mark as for sale</label>
+        <label class="checkbox-label"><input type="checkbox" id="form-wishlist" ${d.wishlist?'checked':''}> Add to wishlist instead (don't own yet)</label>
+        ${valueCard}${tracklistHtml}
+        <div class="actions">
+          ${isEdit?'':`<button class="btn-outline" id="btn-rescan">Rescan</button>`}
+          <button class="btn-fill" id="btn-save">${isEdit?'Save changes':'Add to collection'}</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderDetailModal() {
+  const r = state.detail;
+  const v = calcValue(r);
+  const cover = r.coverImage
+    ? `<img src="${esc(r.coverImage)}" style="width:100%;height:100%;object-fit:cover">`
+    : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--bg2)">${IC.music}</div>`;
+  const heroBg = r.coverImage ? `<div class="modal-hero-bg"><img src="${esc(r.coverImage)}"></div>` : '';
+
+  let valueCard = '';
+  if (v) {
+    let profitHtml = '';
+    if (r.purchasePrice) {
+      const diff = v.estimate - r.purchasePrice;
+      profitHtml = `<div style="display:flex;justify-content:space-between;align-items:baseline;font-size:12px;margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.1)">
+        <span style="opacity:.4;font-size:10px;text-transform:uppercase;letter-spacing:.15em">Paid${r.purchaseDate?' · '+new Date(r.purchaseDate).toLocaleDateString():''}</span>
+        <span>${fmt(r.purchasePrice)} <span class="${diff>=0?'profit-pos':'profit-neg'}">${diff>=0?'+':''}${fmt(diff)}</span></span>
+      </div>`;
+    }
+    valueCard = `<div class="value-card">
+      <div style="display:flex;justify-content:space-between;align-items:center"><span class="label">Estimated value</span><span class="confidence ${v.confidence}">${v.confidence} confidence</span></div>
+      <div class="amount">${fmt(v.estimate)}</div>
+      <div class="range">Range: ${fmt(v.low)} – ${fmt(v.high)}</div>
+      <div class="value-meta"><div><dt>Median market</dt><dd>${fmt(r.market?.median)}</dd></div><div><dt>For sale</dt><dd>${v.salesCount} copies</dd></div></div>
+      ${profitHtml}
+    </div>`;
+  }
+
+  const genres = r.genre ? r.genre.split(',').map(g => `<span style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;background:var(--bg2);padding:3px 10px;border-radius:50px">${esc(g.trim())}</span>`).join(' ') : '';
+
+  let tracklistHtml = '';
+  if (r.tracklist && r.tracklist.length) {
+    tracklistHtml = `<div class="tracklist-header">Tracklist</div><div class="tracklist">${r.tracklist.map(t =>
+      `<div class="track"><span class="track-pos">${esc(t.position||'')}</span><span class="track-title">${esc(t.title||'')}</span>${t.duration?`<span class="track-dur">${esc(t.duration)}</span>`:''}</div>`
+    ).join('')}</div>`;
+  }
+
+  const discogsLink = r.discogsUri ? `<a class="discogs-link" href="${r.discogsUri.startsWith('http')?r.discogsUri:'https://www.discogs.com'+r.discogsUri}" target="_blank">${icon('ext',14)} View on Discogs</a>` : '';
+
+  const mc = r.media_condition || r.vinylCondition;
+  const sc = r.sleeve_condition || r.sleeveCondition;
+  const tagsHtml = (Array.isArray(r.tags) && r.tags.length) ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">${r.tags.map(t => `<span class="user-tag">${esc(t)}</span>`).join('')}</div>` : '';
+  const forSaleChip = r.for_sale ? `<span class="for-sale-chip">For sale</span>` : '';
+  const confChip = r.confidence ? `<span class="conf-dot conf-${r.confidence}" title="${r.confidence} confidence match"></span>` : '';
+
+  return `<div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-hero">${heroBg}
+        <button class="modal-close" id="modal-close">${IC.x}</button>
+        <div class="modal-cover">${cover}</div>
+        <div class="modal-info">
+          <div class="modal-title">${confChip}${esc(r.title)}</div>
+          <div class="modal-artist">${esc(r.artist)}</div>
+          <div class="modal-tags">${r.year?`<span>${r.year}</span>`:''}${r.label?`<span>· ${esc(r.label)}</span>`:''}${r.country?`<span>· ${esc(r.country)}</span>`:''}${forSaleChip}</div>
+          ${genres?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">${genres}</div>`:''}
+        </div>
+      </div>
+      <div class="modal-body">
+        ${valueCard}
+        <div class="condition-grid">
+          <div class="condition-box"><div class="cb-label">Vinyl</div><div class="cb-grade">${esc(mc||'')}</div><div class="cb-name">${CONDITIONS[mc]?.label||''}</div></div>
+          <div class="condition-box"><div class="cb-label">Sleeve</div><div class="cb-grade">${esc(sc||'')}</div><div class="cb-name">${CONDITIONS[sc]?.label||''}</div></div>
+        </div>
+        ${tagsHtml}
+        ${tracklistHtml}
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;margin-bottom:16px">
+          ${r.catalogNumber?`<div><div class="field-label">Catalog #</div><div style="font-family:var(--mono)">${esc(r.catalogNumber)}</div></div>`:''}
+          ${r.barcode?`<div><div class="field-label">Barcode</div><div style="font-family:var(--mono)">${esc(r.barcode)}</div></div>`:''}
+          ${r.purchase_source?`<div><div class="field-label">Source</div><div>${esc(r.purchase_source)}</div></div>`:''}
+          ${r.location?`<div><div class="field-label">Location</div><div>${esc(r.location)}</div></div>`:''}
+        </div>
+        ${r.pressing_notes?`<div style="margin-bottom:16px"><div class="field-label">Pressing notes</div><p style="font-size:14px;color:var(--tx2);white-space:pre-wrap">${esc(r.pressing_notes)}</p></div>`:''}
+        ${r.notes?`<div style="margin-bottom:16px"><div class="field-label">Notes</div><p style="font-size:14px;color:var(--tx2);white-space:pre-wrap">${esc(r.notes)}</p></div>`:''}
+        ${discogsLink}
+        <div class="actions">
+          <button class="btn-fill" id="btn-edit">${icon('edit')} Edit</button>
+          <button class="btn-outline" id="btn-delete">${icon('trash')} Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderToast() {
+  if (!state.toast) return '';
+  return `<div class="toast${state.toast.type==='error'?' error':''}">${esc(state.toast.message)}</div>`;
+}
+
+function renderCollectionModal() {
+  const m = state.collectionModal;
+  if (!m) return '';
+  if (m.mode === 'list') {
+    return `<div class="modal-overlay" id="modal-overlay">
+      <div class="modal" style="max-height:80vh">
+        <div class="modal-hero" style="padding:20px;min-height:auto">
+          <button class="modal-close" id="modal-close">${IC.x}</button>
+          <div><h2 style="font-family:var(--serif);font-size:28px">Collections</h2><p style="font-size:12px;color:var(--tx2);margin-top:4px">Saved views over your library. They don't duplicate records.</p></div>
+        </div>
+        <div class="col-modal-body">
+          <button class="btn-fill" id="btn-col-create" style="width:100%;justify-content:center;margin-bottom:16px">${icon('plus',14)} New collection</button>
+          ${state.collections.length === 0 ? `<p style="font-size:13px;color:var(--tx3);text-align:center;padding:24px 0">No collections yet. Create one to save a filter set as a quick-access view.</p>` :
+            `<div class="col-list">${state.collections.map(c => {
+              const count = c.type === 'manual' ? (c.recordIds?.length || 0) : applyFilters(state.records.filter(r=>!r.wishlist), c.filters||{}).length;
+              return `<div class="col-list-row">
+                <span>${icon('folder',14)} ${esc(c.name)} <span class="col-meta">· ${count} records · ${c.type === 'manual' ? 'manual' : 'filter'}</span></span>
+                <button data-col-del="${c.id}">Delete</button>
+              </div>`;
+            }).join('')}</div>`}
+        </div>
+      </div>
+    </div>`;
+  }
+  if (m.mode === 'create') {
+    const filterCount = activeFilterCount();
+    const matched = filterCount > 0 ? applyFilters(state.records.filter(r=>!r.wishlist), state.filters).length : 0;
+    return `<div class="modal-overlay" id="modal-overlay">
+      <div class="modal">
+        <div class="modal-hero" style="padding:20px;min-height:auto">
+          <button class="modal-close" id="modal-close">${IC.x}</button>
+          <div><h2 style="font-family:var(--serif);font-size:28px">New collection</h2></div>
+        </div>
+        <div class="col-modal-body">
+          <div class="field"><label class="field-label">Name</label><input type="text" id="col-name" placeholder="Jazz shelf, For trade, In storage..." autofocus></div>
+          <p class="col-hint">Choose how this collection works:</p>
+          <div class="col-type-row">
+            <button class="col-type-btn ${m.type === 'filter' ? 'active' : ''}" data-col-type="filter">
+              <strong>Filter view</strong>
+              <span>Saves the filters currently active. Auto-updates as you add records.</span>
+            </button>
+            <button class="col-type-btn ${m.type === 'manual' ? 'active' : ''}" data-col-type="manual">
+              <strong>Manual list</strong>
+              <span>Pick records by hand. Stays put unless you edit it.</span>
+            </button>
+          </div>
+          ${m.type === 'filter' ? (filterCount === 0
+            ? `<div class="info-box"><strong>No filters active</strong><p>Go back, apply some filters, then create the collection from them.</p></div>`
+            : `<div class="info-box"><strong>Will save ${filterCount} filter${filterCount===1?'':'s'} → ${matched} record${matched===1?'':'s'}</strong><p>Active filters: ${describeActiveFilters()}</p></div>`) : ''}
+          ${m.type === 'manual' ? `<div class="info-box"><strong>Manual list</strong><p>You can add records to this collection later from the record detail view.</p></div>` : ''}
+          <div class="actions" style="margin-top:18px">
+            <button class="btn-outline" id="btn-col-cancel">Cancel</button>
+            <button class="btn-fill" id="btn-col-save">Create</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+  return '';
+}
+
+function describeActiveFilters() {
+  const f = state.filters;
+  const parts = [];
+  if (f.formats.length) parts.push(f.formats.join('/'));
+  if (f.genres.length) parts.push(f.genres.join('/'));
+  if (f.decades.length) parts.push(f.decades.map(d => d+'s').join('/'));
+  if (f.condMin) parts.push(f.condMin + '+');
+  if (f.countries.length) parts.push(f.countries.join('/'));
+  if (f.tags.length) parts.push('tags: ' + f.tags.join('/'));
+  if (f.forSale) parts.push('for sale');
+  return parts.join(' · ');
+}
+
+function createCollection(name, type) {
+  const c = {
+    id: uid(),
+    name: name.trim(),
+    type,
+    createdAt: new Date().toISOString(),
+  };
+  if (type === 'filter') {
+    c.filters = JSON.parse(JSON.stringify(state.filters));
+  } else {
+    c.recordIds = [];
+  }
+  state.collections.push(c);
+  saveCollections();
+  state.activeCollection = c.id;
+  saveFilters();
+  toast('Collection created');
+  return c;
+}
+
+function deleteCollection(id) {
+  state.collections = state.collections.filter(c => c.id !== id);
+  if (state.activeCollection === id) state.activeCollection = null;
+  saveCollections();
+  saveFilters();
+}
+
+function esc(s) { if (!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function toast(msg, type) {
+  state.toast = { message: msg, type: type||'success' };
+  render();
+  setTimeout(() => { state.toast = null; render(); }, 3500);
+}
+
+// ============================================================================
+// EVENT BINDING
+// ============================================================================
+let scannerStream = null;
+let scannerInterval = null;
+let isManualMode = false;
+
+function bindEvents() {
+  // Header add
+  on('btn-scan', 'click', () => openScanner());
+  on('btn-scan-empty', 'click', () => openScanner());
+
+  // Tabs
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => { state.view = t.dataset.view; render(); });
+  });
+
+  // Search
+  const sf = document.getElementById('search-field');
+  if (sf) sf.addEventListener('input', (e) => { state.search = e.target.value; render(); document.getElementById('search-field')?.focus(); });
+  const so = document.getElementById('sort-field');
+  if (so) so.addEventListener('change', (e) => { state.sort = e.target.value; saveFilters(); render(); });
+
+  // R1 — filter chips
+  document.querySelectorAll('[data-flt-group]').forEach(el => {
+    el.addEventListener('click', () => {
+      const group = el.dataset.fltGroup;
+      let val = el.dataset.fltVal;
+      if (group === 'decades') val = parseInt(val, 10);
+      toggleFilter(group, val);
+      render();
+    });
+  });
+  document.querySelectorAll('[data-flt-cond]').forEach(el => {
+    el.addEventListener('click', () => {
+      const v = el.dataset.fltCond;
+      state.filters.condMin = state.filters.condMin === v ? null : v;
+      saveFilters();
+      render();
+    });
+  });
+  document.querySelectorAll('[data-flt-forsale]').forEach(el => {
+    el.addEventListener('click', () => {
+      state.filters.forSale = !state.filters.forSale;
+      saveFilters();
+      render();
+    });
+  });
+  on('btn-clear-filters', 'click', () => { clearFilters(); render(); });
+
+  // R1 — collection switching
+  document.querySelectorAll('[data-col]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      if (el.id === 'btn-manage-collection') return;
+      const id = el.dataset.col;
+      state.activeCollection = id || null;
+      saveFilters();
+      render();
+    });
+  });
+  on('btn-new-collection', 'click', () => {
+    state.collectionModal = { mode: 'create', type: 'filter' };
+    render();
+  });
+  on('btn-manage-collection', 'click', () => {
+    state.collectionModal = { mode: 'list' };
+    render();
+  });
+
+  // R1 — collection modal
+  document.querySelectorAll('[data-col-type]').forEach(el => {
+    el.addEventListener('click', () => {
+      if (state.collectionModal) {
+        state.collectionModal.type = el.dataset.colType;
+        render();
+      }
+    });
+  });
+  on('btn-col-cancel', 'click', () => { state.collectionModal = null; render(); });
+  on('btn-col-save', 'click', () => {
+    const name = document.getElementById('col-name')?.value || '';
+    if (!name.trim()) { toast('Name required', 'error'); return; }
+    const type = state.collectionModal?.type || 'filter';
+    if (type === 'filter' && activeFilterCount() === 0) {
+      toast('Apply some filters first', 'error');
+      return;
+    }
+    createCollection(name, type);
+    state.collectionModal = null;
+    render();
+  });
+  on('btn-col-create', 'click', () => {
+    state.collectionModal = { mode: 'create', type: 'filter' };
+    render();
+  });
+  document.querySelectorAll('[data-col-del]').forEach(el => {
+    el.addEventListener('click', () => {
+      const id = el.dataset.colDel;
+      if (confirm('Delete this collection? Records stay in your library.')) {
+        deleteCollection(id);
+        toast('Collection deleted');
+        render();
+      }
+    });
+  });
+
+  // Cards -> detail
+  document.querySelectorAll('[data-detail]').forEach(el => {
+    el.addEventListener('click', () => { state.detail = state.records.find(r => r.id === el.dataset.detail); render(); });
+  });
+
+  // Modal close
+  on('modal-close', 'click', closeModals);
+  on('modal-overlay', 'click', (e) => { if (e.target.id === 'modal-overlay') closeModals(); });
+
+  // Scanner
+  on('scanner-close', 'click', closeScanner);
+  on('scanner-toggle-manual', 'click', toggleScannerMode);
+  on('btn-manual-lookup', 'click', () => {
+    const code = document.getElementById('manual-barcode')?.value?.trim();
+    if (code) { closeScanner(); doLookup(code); }
+  });
+  const mi = document.getElementById('manual-barcode');
+  if (mi) mi.addEventListener('keydown', (e) => { if (e.key==='Enter') document.getElementById('btn-manual-lookup')?.click(); });
+
+  // Form save
+  on('btn-save', 'click', saveForm);
+  on('btn-rescan', 'click', () => { state.lookup = null; render(); openScanner(); });
+
+  document.querySelectorAll('[data-dup]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = el.dataset.dup;
+      const rec = state.records.find(r => r.id === id);
+      if (rec) {
+        state.lookup = null;
+        state.detail = rec;
+        render();
+      }
+    });
+  });
+
+  // Detail actions
+  on('btn-edit', 'click', () => {
+    state.editing = { ...state.detail };
+    state.detail = null;
+    render();
+  });
+  on('btn-delete', 'click', () => {
+    if (confirm('Remove this record from your collection?')) {
+      state.records = state.records.filter(r => r.id !== state.detail.id);
+      saveRecords();
+      state.detail = null;
+      render();
+      toast('Record removed');
+    }
+  });
+
+  // Settings
+  const dt = document.getElementById('discogs-token');
+  if (dt) dt.addEventListener('change', () => { state.settings.discogsToken = dt.value; saveSettings(); toast('Token saved'); });
+
+  on('btn-export-json', 'click', exportJSON);
+  on('btn-export-csv', 'click', exportCSV);
+  on('btn-export-discogs', 'click', exportDiscogsCSV);
+  on('btn-import-json', 'click', () => document.getElementById('file-import')?.click());
+  const fi = document.getElementById('file-import');
+  if (fi) fi.addEventListener('change', importJSON);
+
+  // Start camera if scanner is open
+  if (state.scanning && !isManualMode) startCamera();
+}
+
+function on(id, evt, fn) {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener(evt, fn);
+}
+
+function closeModals() {
+  state.lookup = null;
+  state.detail = null;
+  state.editing = null;
+  state.collectionModal = null;
+  render();
+}
+
+// ============================================================================
+// SCANNER LOGIC
+// ============================================================================
+function openScanner() {
+  state.scanning = true;
+  isManualMode = false;
+  render();
+}
+
+function closeScanner() {
+  stopCamera();
+  state.scanning = false;
+  isManualMode = false;
+  render();
+}
+
+function toggleScannerMode() {
+  isManualMode = !isManualMode;
+  const cam = document.getElementById('scanner-camera-area');
+  const man = document.getElementById('scanner-manual-area');
+  const btn = document.getElementById('scanner-toggle-manual');
+  if (isManualMode) {
+    stopCamera();
+    if (cam) cam.style.display = 'none';
+    if (man) man.style.display = 'block';
+    if (btn) btn.textContent = 'Camera';
+    document.getElementById('manual-barcode')?.focus();
+  } else {
+    if (cam) cam.style.display = 'block';
+    if (man) man.style.display = 'none';
+    if (btn) btn.textContent = 'Manual';
+    startCamera();
+  }
+}
+
+async function startCamera() {
+  const video = document.getElementById('scanner-video');
+  if (!video) return;
+
+  if (!('BarcodeDetector' in window)) {
+    // No BarcodeDetector, force manual
+    isManualMode = true;
+    const cam = document.getElementById('scanner-camera-area');
+    const man = document.getElementById('scanner-manual-area');
+    const btn = document.getElementById('scanner-toggle-manual');
+    if (cam) cam.style.display = 'none';
+    if (man) { man.style.display = 'block'; man.innerHTML = `<div>${IC.alert}</div><p>Your browser doesn't support barcode scanning. Enter the code manually.</p><input type="text" inputmode="numeric" id="manual-barcode" class="manual-input" placeholder="e.g. 0602567890123"><button class="btn-primary" id="btn-manual-lookup" style="width:100%;margin-top:16px;justify-content:center">Look up</button>`; }
+    if (btn) btn.style.display = 'none';
+    on('btn-manual-lookup', 'click', () => { const c=document.getElementById('manual-barcode')?.value?.trim(); if(c){closeScanner();doLookup(c);} });
+    return;
+  }
+
+  try {
+    scannerStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    video.srcObject = scannerStream;
+    await video.play();
+
+    const detector = new BarcodeDetector({ formats: ['ean_13','ean_8','upc_a','upc_e','code_128','code_39'] });
+    scannerInterval = setInterval(async () => {
+      try {
+        const codes = await detector.detect(video);
+        if (codes.length > 0) {
+          const code = codes[0].rawValue;
+          closeScanner();
+          doLookup(code);
+        }
+      } catch(e) {}
+    }, 300);
+  } catch(e) {
+    // Camera error, switch to manual
+    toggleScannerMode();
+  }
+}
+
+function stopCamera() {
+  if (scannerInterval) { clearInterval(scannerInterval); scannerInterval = null; }
+  if (scannerStream) { scannerStream.getTracks().forEach(t => t.stop()); scannerStream = null; }
+}
+
+// ============================================================================
+// LOOKUP & SAVE
+// ============================================================================
+async function doLookup(barcode) {
+  state.lookup = { loading: true, barcode };
+  render();
+
+  try {
+    const result = await lookupBarcode(barcode);
+    if (!result) {
+      state.lookup = { loading: false, barcode, error: 'No release found for this barcode.', result: { barcode, vinylCondition:'NM', sleeveCondition:'NM', media_condition:'NM', sleeve_condition:'NM', confidence:'low' } };
+    } else {
+      result.vinylCondition = result.vinylCondition || 'NM';
+      result.sleeveCondition = result.sleeveCondition || 'NM';
+      result.media_condition = result.media_condition || result.vinylCondition;
+      result.sleeve_condition = result.sleeve_condition || result.sleeveCondition;
+      result.confidence = result.discogsId ? 'high' : (barcode ? 'medium' : 'low');
+      const dup = findDuplicate(barcode, result.discogsId);
+      state.lookup = { loading: false, barcode, result, duplicate: dup || null };
+    }
+  } catch(e) {
+    state.lookup = { loading: false, barcode, error: e.message, result: { barcode, vinylCondition:'NM', sleeveCondition:'NM', media_condition:'NM', sleeve_condition:'NM', confidence:'low' } };
+  }
+  render();
+}
+
+function findDuplicate(barcode, discogsId) {
+  return state.records.find(r => {
+    if (r.wishlist) return false;
+    if (barcode && r.barcode && String(r.barcode) === String(barcode)) return true;
+    if (discogsId && r.discogsId && String(r.discogsId) === String(discogsId)) return true;
+    return false;
+  });
+}
+
+function saveForm() {
+  const isEdit = !!state.editing;
+  const base = isEdit ? state.editing : (state.lookup?.result || {});
+
+  const data = { ...base };
+  const fa = document.getElementById('form-artist');
+  const ft = document.getElementById('form-title');
+  if (fa) data.artist = fa.value;
+  if (ft) data.title = ft.value;
+  const mc = document.getElementById('form-vinyl-cond')?.value || 'NM';
+  const sc = document.getElementById('form-sleeve-cond')?.value || 'NM';
+  data.media_condition = mc;
+  data.sleeve_condition = sc;
+  data.vinylCondition = mc;
+  data.sleeveCondition = sc;
+  const pp = document.getElementById('form-price')?.value;
+  data.purchasePrice = pp ? parseFloat(pp) : null;
+  data.purchaseDate = document.getElementById('form-date')?.value || '';
+  data.purchase_source = document.getElementById('form-source')?.value || '';
+  data.location = document.getElementById('form-location')?.value || '';
+  data.pressing_notes = document.getElementById('form-pressing')?.value || '';
+  const tagsRaw = document.getElementById('form-tags')?.value || '';
+  data.tags = tagsRaw.split(',').map(t => t.trim()).filter(Boolean);
+  data.notes = document.getElementById('form-notes')?.value || '';
+  data.for_sale = document.getElementById('form-for-sale')?.checked || false;
+  data.wishlist = document.getElementById('form-wishlist')?.checked || false;
+  data.updated_at = new Date().toISOString();
+  data.schema_version = SCHEMA_VERSION;
+
+  if (isEdit && data.id) {
+    state.records = state.records.map(r => r.id === data.id ? { ...r, ...data } : r);
+    toast('Record updated');
+  } else {
+    data.id = uid();
+    data.dateAdded = new Date().toISOString();
+    if (!data.confidence) data.confidence = data.discogsId ? 'high' : (data.barcode ? 'medium' : 'low');
+    state.records.unshift(data);
+    toast('Added to collection');
+  }
+
+  saveRecords();
+  state.lookup = null;
+  state.editing = null;
+  render();
+}
+
+// ============================================================================
+// EXPORT / IMPORT
+// ============================================================================
+function exportJSON() {
+  const blob = new Blob([JSON.stringify({ records: state.records, settings: state.settings, exportedAt: new Date().toISOString() }, null, 2)], { type: 'application/json' });
+  dl(blob, `vinyl-radar-${new Date().toISOString().split('T')[0]}.json`);
+  toast('Backup downloaded');
+}
+
+function exportCSV() {
+  const h = ['Artist','Title','Year','Label','Catalog#','Barcode','Genre','Media','Sleeve','Paid','Purchase Date','Source','Location','Tags','Pressing Notes','For Sale','Estimated Value','Notes','Wishlist'];
+  const rows = state.records.map(r => {
+    const v = calcValue(r);
+    const mc = r.media_condition || r.vinylCondition;
+    const sc = r.sleeve_condition || r.sleeveCondition;
+    const tags = Array.isArray(r.tags) ? r.tags.join('; ') : '';
+    return [r.artist,r.title,r.year,r.label,r.catalogNumber,r.barcode,r.genre,mc,sc,r.purchasePrice,r.purchaseDate,r.purchase_source,r.location,tags,r.pressing_notes,r.for_sale?'Yes':'',v?.estimate||'',r.notes,r.wishlist?'Yes':''].map(v => `"${(v??'').toString().replace(/"/g,'""')}"`).join(',');
+  });
+  const csv = [h.join(','), ...rows].join('\n');
+  dl(new Blob([csv], { type:'text/csv' }), `vinyl-radar-${new Date().toISOString().split('T')[0]}.csv`);
+  toast('CSV exported');
+}
+
+function exportDiscogsCSV() {
+  const h = ['Catalog#','Artist','Title','Label','Format','Rating','Released','release_id','CollectionFolder','Date Added','Collection Media Condition','Collection Sleeve Condition','Collection Notes'];
+  const own = state.records.filter(r => !r.wishlist);
+  const rows = own.map(r => {
+    const mc = r.media_condition || r.vinylCondition || '';
+    const sc = r.sleeve_condition || r.sleeveCondition || '';
+    const notesParts = [];
+    if (r.notes) notesParts.push(r.notes);
+    if (r.pressing_notes) notesParts.push('Pressing: ' + r.pressing_notes);
+    if (r.purchase_source) notesParts.push('Source: ' + r.purchase_source);
+    if (r.location) notesParts.push('Location: ' + r.location);
+    if (Array.isArray(r.tags) && r.tags.length) notesParts.push('Tags: ' + r.tags.join(', '));
+    if (r.purchasePrice) notesParts.push('Paid: ' + r.purchasePrice + (r.purchaseDate ? ' on ' + r.purchaseDate : ''));
+    const notes = notesParts.join(' | ');
+    const dateAdded = r.dateAdded ? r.dateAdded.split('T')[0] : '';
+    return [r.catalogNumber||'', r.artist||'', r.title||'', r.label||'', 'Vinyl', '', r.year||'', r.discogsId||'', 'Uncategorized', dateAdded, mc, sc, notes]
+      .map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
+  });
+  const csv = [h.join(','), ...rows].join('\n');
+  dl(new Blob([csv], { type:'text/csv' }), `vinyl-radar-for-discogs-${new Date().toISOString().split('T')[0]}.csv`);
+  toast('Discogs CSV exported');
+}
+
+function importJSON(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const d = JSON.parse(reader.result);
+      if (Array.isArray(d.records)) {
+        state.records = d.records;
+        saveRecords();
+        if (d.settings) { Object.assign(state.settings, d.settings); saveSettings(); }
+        toast(`Restored ${d.records.length} records`);
+        render();
+      } else { toast('Invalid backup file', 'error'); }
+    } catch(er) { toast('Could not read file', 'error'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+function dl(blob, name) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ============================================================================
+// SERVICE WORKER REGISTRATION
+// ============================================================================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'activated' && navigator.serviceWorker.controller) {
+            toast('App updated — refresh for the latest version');
+          }
+        });
+      });
+    }).catch(err => console.log('SW registration failed:', err));
+  });
+}
+
+// ============================================================================
+// INIT
+// ============================================================================
+loadState();
+render();
+</script>
+</body>
+</html>
