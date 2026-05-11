@@ -1302,6 +1302,7 @@ function renderScanner() {
         <p>Enter the barcode number from the back of the sleeve</p>
         <input type="text" inputmode="numeric" id="manual-barcode" class="manual-input" placeholder="e.g. 0602567890123">
         <button class="btn-primary" id="btn-manual-lookup" style="width:100%;margin-top:16px;justify-content:center">Look up</button>
+        <button id="btn-no-barcode" style="width:100%;margin-top:10px;padding:12px;border-radius:50px;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.6);font-size:14px;background:none">No barcode — add manually</button>
       </div>
     </div>
   </div>`;
@@ -1360,8 +1361,8 @@ function renderRecordForm(data, error, isEdit, duplicate) {
     </div>` : '';
 
   const manualFields = (!d.title || !d.artist) ? `
-    <div class="field"><label class="field-label">Artist</label><input type="text" id="form-artist" value="${esc(d.artist||'')}"></div>
-    <div class="field"><label class="field-label">Title</label><input type="text" id="form-title" value="${esc(d.title||'')}"></div>` : '';
+    <div class="field"><label class="field-label">Artist *</label><input type="text" id="form-artist" placeholder="e.g. Camel" value="${esc(d.artist||'')}"></div>
+    <div class="field"><label class="field-label">Title *</label><input type="text" id="form-title" placeholder="e.g. The Snow Goose" value="${esc(d.title||'')}"></div>` : '';
 
   const tagsValue = Array.isArray(d.tags) ? d.tags.join(', ') : '';
 
@@ -1720,6 +1721,11 @@ function bindEvents() {
   on('btn-manual-lookup', 'click', () => {
     const code = document.getElementById('manual-barcode')?.value?.trim();
     if (code) { closeScanner(); doLookup(code); }
+  });
+  on('btn-no-barcode', 'click', () => {
+    closeScanner();
+    state.lookup = { loading: false, barcode: null, result: { vinylCondition:'NM', sleeveCondition:'NM', media_condition:'NM', sleeve_condition:'NM', confidence:'low' } };
+    render();
   });
   const mi = document.getElementById('manual-barcode');
   if (mi) mi.addEventListener('keydown', (e) => { if (e.key==='Enter') document.getElementById('btn-manual-lookup')?.click(); });
