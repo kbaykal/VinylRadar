@@ -691,8 +691,7 @@ function getFiltered() {
 function renderLibrary() {
   const owned = state.records.filter(r => !r.wishlist);
   if (owned.length === 0) {
-    return `<div class="empty">${IC.disc}<h2>Your shelf is empty</h2><p>Scan the barcode on the back of any record sleeve to start building your collection.</p><button class="btn-primary" id="btn-scan-empty">${icon('camera',18)} Scan first record</button></div>`;
-  }
+    return `<div class="empty">${IC.disc}<h2>Your shelf is empty</h2><p>Scan the barcode on the back of any record sleeve to start building your collection.</p><button class="btn-primary" id="btn-scan-empty">Scan first record</button></div>`;  }
   const recs = getFiltered();
   return `<div class="search-bar">
     <div class="search-input">${IC.search}<input type="text" id="search-field" placeholder="Search artist, album, label..." value="${esc(state.search)}"></div>
