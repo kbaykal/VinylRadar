@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VinylRadar — Product Definition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Literata:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #1a1714;
+    --ink-2: #3d3832;
+    --ink-3: #6b6560;
+    --ink-4: #9e9890;
+    --paper: #f5f1ea;
+    --paper-2: #ede8df;
+    --paper-3: #e4ddd1;
+    --rule: #cec7bb;
+    --accent: #c0392b;
+    --accent-2: #e8593a;
+    --accent-pale: #f9ece9;
+    --teal: #1a6b5a;
+    --teal-pale: #e8f4f1;
+    --amber: #b5640a;
+    --amber-pale: #fdf2e3;
+    --serif: 'DM Serif Display', Georgia, serif;
+    --body: 'Literata', Georgia, serif;
+    --mono: 'DM Mono', monospace;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.75;
+    font-weight: 300;
+  }
+
+  /* ── LAYOUT ────────────────────────────────── */
+  .page-wrap {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: 100vh;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  /* ── SIDEBAR ───────────────────────────────── */
+  .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    border-right: 1px solid var(--rule);
+    padding: 2rem 0;
+    background: var(--paper);
+    scrollbar-width: none;
+  }
+  .sidebar::-webkit-scrollbar { display: none; }
+
+  .sidebar-logo {
+    padding: 0 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 1.25rem;
+  }
+  .sidebar-logo .wordmark {
+    font-family: var(--serif);
+    font-size: 18px;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+    display: block;
+  }
+  .sidebar-logo .tagline {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-3);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    display: block;
+    margin-top: 2px;
+  }
+
+  .nav-section {
+    padding: 0 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .nav-section-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    margin-bottom: 0.4rem;
+    padding-left: 0.25rem;
+  }
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 8px;
+    border-radius: 5px;
+    font-size: 12.5px;
+    color: var(--ink-3);
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+    line-height: 1.4;
+  }
+  .nav-link:hover { background: var(--paper-3); color: var(--ink); }
+  .nav-link.active { background: var(--accent-pale); color: var(--accent); font-weight: 500; }
+  .nav-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-4);
+    min-width: 14px;
+  }
+
+  /* ── MAIN CONTENT ──────────────────────────── */
+  .main {
+    padding: 0 3rem 6rem;
+    max-width: 780px;
+  }
+
+  /* ── COVER ─────────────────────────────────── */
+  .cover {
+    padding: 4rem 0 3rem;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 3.5rem;
+  }
+  .cover-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+  .cover-title {
+    font-family: var(--serif);
+    font-size: clamp(42px, 5vw, 62px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 0.75rem;
+  }
+  .cover-title em { font-style: italic; color: var(--accent); }
+  .cover-sub {
+    font-size: 17px;
+    color: var(--ink-2);
+    font-weight: 300;
+    max-width: 560px;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+  }
+  .cover-meta {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .cover-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .cover-meta-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+  }
+  .cover-meta-value {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-2);
+  }
+
+  /* ── SECTION HEADING ───────────────────────── */
+  .section {
+    margin-bottom: 4rem;
+    scroll-margin-top: 2rem;
+  }
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  .section-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-4);
+    letter-spacing: 0.06em;
+  }
+  .section-title {
+    font-family: var(--serif);
+    font-size: 28px;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    color: var(--ink);
+  }
+  .section-divider {
+    height: 1px;
+    background: var(--rule);
+    margin: 0.75rem 0 1.75rem;
+  }
+  .section-lead {
+    font-size: 16px;
+    color: var(--ink-2);
+    line-height: 1.7;
+    margin-bottom: 1.75rem;
+    max-width: 620px;
+    font-weight: 300;
+    font-style: italic;
+  }
+
+  /* ── SUBSECTION ────────────────────────────── */
+  h3.sub {
+    font-family: var(--serif);
+    font-size: 18px;
+    color: var(--ink);
+    margin: 2.5rem 0 0.6rem;
+    letter-spacing: -0.01em;
+  }
+  h4.micro {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 1.5rem 0 0.5rem;
+  }
+  p { margin-bottom: 0.85rem; color: var(--ink-2); font-size: 14.5px; }
+  p:last-child { margin-bottom: 0; }
+
+  /* ── SPEC BLOCKS ───────────────────────────── */
+  .spec-block {
+    background: var(--paper-2);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    margin: 1.25rem 0;
+  }
+  .spec-block .spec-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .spec-block .spec-title::before {
+    content: '';
+    display: block;
+    width: 3px;
+    height: 12px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+  .spec-block ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .spec-block li {
+    font-size: 13.5px;
+    color: var(--ink-2);
+    padding-left: 1rem;
+    position: relative;
+    line-height: 1.55;
+  }
+  .spec-block li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--ink-4);
+    font-size: 12px;
+  }
+
+  /* ── DECISION TABLE ────────────────────────── */
+  .decision-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 1.25rem 0;
+  }
+  .decision-table th {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    padding: 8px 12px;
+    text-align: left;
+    background: var(--paper-3);
+    border: 1px solid var(--rule);
+  }
+  .decision-table td {
+    padding: 8px 12px;
+    border: 1px solid var(--rule);
+    color: var(--ink-2);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  .decision-table tr:nth-child(even) td { background: var(--paper-2); }
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    padding: 2px 7px;
+    border-radius: 3px;
+    vertical-align: middle;
+  }
+  .tag-v1 { background: var(--teal-pale); color: var(--teal); }
+  .tag-v2 { background: var(--amber-pale); color: var(--amber); }
+  .tag-later { background: var(--paper-3); color: var(--ink-3); }
+  .tag-cut { background: #f5e5e5; color: #a33; text-decoration: line-through; }
+  .tag-yes { background: var(--teal-pale); color: var(--teal); }
+  .tag-no { background: #f5e5e5; color: #a33; }
+  .tag-partial { background: var(--amber-pale); color: var(--amber); }
+
+  /* ── CALLOUT ───────────────────────────────── */
+  .callout {
+    border-left: 3px solid;
+    padding: 0.85rem 1.25rem;
+    margin: 1.25rem 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--ink-2);
+  }
+  .callout-warn { border-color: var(--amber); background: var(--amber-pale); }
+  .callout-good { border-color: var(--teal); background: var(--teal-pale); }
+  .callout-crit { border-color: var(--accent); background: var(--accent-pale); }
+  .callout strong {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 4px;
+    color: var(--ink-3);
+  }
+
+  /* ── PHASE TIMELINE ────────────────────────── */
+  .phase-row {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 1rem;
+    margin: 1rem 0;
+    padding: 1rem;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    background: var(--paper-2);
+  }
+  .phase-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    letter-spacing: 0.05em;
+  }
+  .phase-label .phase-num {
+    font-family: var(--serif);
+    font-size: 28px;
+    display: block;
+    color: var(--ink);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .phase-items {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .phase-item {
+    font-size: 13px;
+    color: var(--ink-2);
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .phase-item::before {
+    content: '▸';
+    color: var(--accent);
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+
+  /* ── COMPETITOR TABLE ──────────────────────── */
+  .comp-row td:first-child { font-weight: 500; color: var(--ink); font-size: 13px; }
+  .comp-win { color: var(--teal); font-size: 12px; }
+  .comp-lose { color: #a33; font-size: 12px; }
+  .comp-partial { color: var(--amber); font-size: 12px; }
+
+  /* ── DATA MODEL ────────────────────────────── */
+  .field-row {
+    display: grid;
+    grid-template-columns: 160px 80px 1fr;
+    gap: 8px 12px;
+    align-items: baseline;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--rule);
+    font-size: 13px;
+  }
+  .field-row:last-child { border-bottom: none; }
+  .field-name { font-family: var(--mono); font-size: 12px; color: var(--ink); }
+  .field-type { font-family: var(--mono); font-size: 11px; color: var(--teal); }
+  .field-desc { color: var(--ink-3); line-height: 1.45; }
+  .field-req { color: var(--accent); font-size: 10px; }
+
+  /* ── REVENUE MODEL ─────────────────────────── */
+  .rev-tier {
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 1rem 0;
+  }
+  .rev-tier-header {
+    padding: 0.75rem 1.25rem;
+    background: var(--paper-3);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .rev-tier-name {
+    font-family: var(--serif);
+    font-size: 16px;
+    color: var(--ink);
+  }
+  .rev-tier-price {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-3);
+  }
+  .rev-tier-body {
+    padding: 0.85rem 1.25rem;
+    background: var(--paper-2);
+  }
+  .rev-tier-body ul { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+  .rev-tier-body li { font-size: 13px; color: var(--ink-2); padding-left: 1rem; position: relative; }
+  .rev-tier-body li::before { content: '—'; position: absolute; left: 0; color: var(--ink-4); font-size: 11px; }
+  .rev-tier-body .note {
+    font-size: 12px;
+    color: var(--ink-3);
+    font-style: italic;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--rule);
+  }
+
+  /* ── PRINT / PAGE ──────────────────────────── */
+  @media print {
+    .sidebar { display: none; }
+    .page-wrap { grid-template-columns: 1fr; }
+    .main { padding: 2rem; max-width: 100%; }
+  }
+
+  @media (max-width: 720px) {
+    .page-wrap { grid-template-columns: 1fr; }
+    .sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--rule); }
+    .main { padding: 0 1.25rem 4rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <!-- ── SIDEBAR ── -->
+  <nav class="sidebar" aria-label="Document navigation">
+    <div class="sidebar-logo">
+      <span class="wordmark">VinylRadar</span>
+      <span class="tagline">Product Definition v1.0</span>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Overview</div>
+      <a href="#vision" class="nav-link"><span class="nav-num">00</span> Vision &amp; promise</a>
+      <a href="#what-we-are-not" class="nav-link"><span class="nav-num">01</span> What we are not</a>
+      <a href="#competitor" class="nav-link"><span class="nav-num">02</span> Competitor analysis</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Product</div>
+      <a href="#data-model" class="nav-link"><span class="nav-num">03</span> Core data model</a>
+      <a href="#scanning" class="nav-link"><span class="nav-num">04</span> Scanning engine</a>
+      <a href="#collection" class="nav-link"><span class="nav-num">05</span> Collection management</a>
+      <a href="#valuation" class="nav-link"><span class="nav-num">06</span> Valuation engine</a>
+      <a href="#offline" class="nav-link"><span class="nav-num">07</span> Offline &amp; sync</a>
+      <a href="#export" class="nav-link"><span class="nav-num">08</span> Data freedom</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Business</div>
+      <a href="#tiers" class="nav-link"><span class="nav-num">09</span> Free &amp; paid tiers</a>
+      <a href="#revenue" class="nav-link"><span class="nav-num">10</span> Revenue model</a>
+      <a href="#database" class="nav-link"><span class="nav-num">11</span> Database strategy</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Execution</div>
+      <a href="#stack" class="nav-link"><span class="nav-num">12</span> Technical stack</a>
+      <a href="#roadmap" class="nav-link"><span class="nav-num">13</span> Phased roadmap</a>
+      <a href="#risks" class="nav-link"><span class="nav-num">14</span> Risk register</a>
+    </div>
+  </nav>
+
+  <!-- ── MAIN ── -->
+  <main class="main">
+
+    <!-- COVER -->
+    <header class="cover" id="top">
+      <div class="cover-eyebrow">Product Definition — v1.0</div>
+      <h1 class="cover-title">Vinyl<em>Radar</em></h1>
+      <p class="cover-sub">A collector-grade, format-agnostic music library app. Free forever at the core. Honest about what's hard. Built to last beyond the incumbents.</p>
+      <div class="cover-meta">
+        <div class="cover-meta-item">
+          <span class="cover-meta-label">Status</span>
+          <span class="cover-meta-value">Working PWA / pre-product</span>
+        </div>
+        <div class="cover-meta-item">
+          <span class="cover-meta-label">Target v1.0</span>
+          <span class="cover-meta-value">Q3 2026</span>
+        </div>
+        <div class="cover-meta-item">
+          <span class="cover-meta-label">Platform</span>
+          <span class="cover-meta-value">PWA + responsive web</span>
+        </div>
+        <div class="cover-meta-item">
+          <span class="cover-meta-label">Author</span>
+          <span class="cover-meta-value">Kıvanç Baykal</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- 00 VISION -->
+    <section class="section" id="vision">
+      <div class="section-header">
+        <span class="section-num">00</span>
+        <h2 class="section-title">Vision &amp; promise</h2>
+      </div>
+      <div class="section-divider"></div>
+      <p class="section-lead">Three sentences that must remain true on every decision we make.</p>
+
+      <div class="spec-block">
+        <div class="spec-title">The three commitments</div>
+        <ul>
+          <li><strong>You own your data.</strong> Full export, at any time, even without an account. If VinylRadar shuts down tomorrow, your collection leaves with you intact.</li>
+          <li><strong>The core is free forever.</strong> Unlimited records. No scan limits. No feature gates on the things a collector fundamentally needs: add, find, grade, export.</li>
+          <li><strong>It works where you are.</strong> Flea market, basement, no signal. Everything core works offline. Sync is transparent and never silent.</li>
+        </ul>
+      </div>
+
+      <h3 class="sub">Who we're building for</h3>
+      <p>The primary user is a collector with 50–2000 physical records (vinyl, CD, cassette) who manages their collection without a dedicated system today — spreadsheets, Discogs wishlists, memory. They are not a power-user audiophile. They are not a casual listener. They are the middle: they care deeply about what they own, they want to know what it's worth, and they're sick of every app either paywalling the basics or being abandonware.</p>
+      <p>A secondary user is the record store owner or serious trader — someone who annotates purchases, tracks acquisition price vs market value, and needs insurance documentation. We serve them with the same core, plus one well-designed paid add-on (the insurance PDF).</p>
+
+      <div class="callout callout-good">
+        <strong>Design principle</strong>
+        No feature ships if it would compromise the three commitments. When in doubt, build less and hold the line.
+      </div>
+    </section>
+
+    <!-- 01 WHAT WE ARE NOT -->
+    <section class="section" id="what-we-are-not">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2 class="section-title">What we are not</h2>
+      </div>
+      <div class="section-divider"></div>
+      <p class="section-lead">Explicit scope cuts. These were evaluated and deliberately removed from v1 and v2 scope.</p>
+
+      <table class="decision-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Decision</th>
+            <th>Reason</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>OpenVinylDB — proprietary community database</td>
+            <td><span class="tag tag-later">Year 3+</span></td>
+            <td>Building a release database is a decade of work. We depend on Discogs + MusicBrainz. That's fine and honest. Revisit when user base can sustain community contributions.</td>
+          </tr>
+          <tr>
+            <td>Record store partnership / POS integration</td>
+            <td><span class="tag tag-cut">Removed</span></td>
+            <td>This is a separate B2B product. It dilutes consumer focus and requires a different sales motion entirely. Cut permanently from v1–v3.</td>
+          </tr>
+          <tr>
+            <td>Social feed / "Spinning Now" friend activity</td>
+            <td><span class="tag tag-later">Year 2+</span></td>
+            <td>Social cold-start problem is real. Build this only after a user base exists. Shareable shelf links (read-only, no account needed) serve the sharing use case in v1.</td>
+          </tr>
+          <tr>
+            <td>Matrix number OCR (runout groove reading)</td>
+            <td><span class="tag tag-v2">v2 / beta</span></td>
+            <td>OCR on etched vinyl under variable lighting fails 50–70% of the time in real conditions. Ship it only as an explicitly-labelled beta, with manual entry always available as the primary fallback.</td>
+          </tr>
+          <tr>
+            <td>Family sharing (up to 5 accounts)</td>
+            <td><span class="tag tag-cut">Removed</span></td>
+            <td>Nobody asks for this in a vinyl tracker. "Share a collection view" (read-only link) is what people actually want and it's free.</td>
+          </tr>
+          <tr>
+            <td>Native iOS / Android apps</td>
+            <td><span class="tag tag-later">Year 2+</span></td>
+            <td>The existing PWA is solid. PWA covers scanning (BarcodeDetector API), offline, home-screen install, push notifications. Native is an investment for when the PWA is feature-complete and has validated user retention.</td>
+          </tr>
+          <tr>
+            <td>Affiliate marketplace links</td>
+            <td><span class="tag tag-v2">v2, limited</span></td>
+            <td>Permissible only as a single discreet "find this on Discogs / eBay" deep-link on the record detail page. No pop-ups, no price-comparison widgets, no affiliate-first UX. Revenue ceiling is low; don't design around it.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 02 COMPETITOR ANALYSIS -->
+    <section class="section" id="competitor">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2 class="section-title">Competitor analysis</h2>
+      </div>
+      <div class="section-divider"></div>
+      <p class="section-lead">Where the incumbents fail — and whether our spec genuinely fixes those failures.</p>
+
+      <table class="decision-table comp-row">
+        <thead>
+          <tr>
+            <th>App</th>
+            <th>Main failure</th>
+            <th>Free tier</th>
+            <th>Offline</th>
+            <th>Format-agnostic</th>
+            <th>Data export</th>
+            <th>We fix it?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Discogs mobile</td>
+            <td style="font-size:12px;">15-item cap, no offline, marketplace-first UX</td>
+            <td><span class="tag tag-no">15 items</span></td>
+            <td><span class="tag tag-no">No</span></td>
+            <td><span class="tag tag-partial">Vinyl-coded</span></td>
+            <td><span class="tag tag-partial">Web only</span></td>
+            <td><span class="comp-win">✓ Yes — genuinely</span></td>
+          </tr>
+          <tr>
+            <td>CLZ Music</td>
+            <td style="font-size:12px;">Siloed paid apps per format, complex UI</td>
+            <td><span class="tag tag-no">Trial only</span></td>
+            <td><span class="tag tag-yes">Yes</span></td>
+            <td><span class="tag tag-no">Separate apps</span></td>
+            <td><span class="tag tag-yes">Yes (paid)</span></td>
+            <td><span class="comp-win">✓ Format-agnostic wins here</span></td>
+          </tr>
+          <tr>
+            <td>MusicBrainz Picard</td>
+            <td style="font-size:12px;">File-tagging tool, not a collection manager</td>
+            <td><span class="tag tag-yes">Free</span></td>
+            <td><span class="tag tag-yes">Yes</span></td>
+            <td><span class="tag tag-partial">Audio files only</span></td>
+            <td><span class="tag tag-yes">Yes</span></td>
+            <td><span class="comp-partial">Different product category</span></td>
+          </tr>
+          <tr>
+            <td>Vinyl Collector app</td>
+            <td style="font-size:12px;">Abandonware, buggy sync, iOS only</td>
+            <td><span class="tag tag-partial">Limited</span></td>
+            <td><span class="tag tag-partial">Partial</span></td>
+            <td><span class="tag tag-no">Vinyl only</span></td>
+            <td><span class="tag tag-no">No</span></td>
+            <td><span class="comp-win">✓ Across the board</span></td>
+          </tr>
+          <tr>
+            <td>Last.fm + spreadsheet</td>
+            <td style="font-size:12px;">Scrobbling, not physical ownership; no grading</td>
+            <td><span class="tag tag-yes">Free</span></td>
+            <td><span class="tag tag-no">No</span></td>
+            <td><span class="tag tag-yes">Yes</span></td>
+            <td><span class="tag tag-partial">CSV from sheet</span></td>
+            <td><span class="comp-win">✓ Physical-first angle wins</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-warn">
+        <strong>Honest gap</strong>
+        The one thing we do NOT fix is pressing-level database depth. Discogs has 8M+ releases catalogued at the specific pressing level by 20 years of obsessive community effort. We depend on their API. We are transparent about this dependency. Our edge is UX, offline-first, export freedom, and honest pricing — not database breadth.
+      </div>
+    </section>
+
+    <!-- 03 DATA MODEL -->
+    <section class="section" id="data-model">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">Core data model</h2>
+      </div>
+      <div class="section-divider"></div>
+      <p class="section-lead">Every item in VinylRadar is a <em>Record</em>. Every field listed below is a first-class, queryable, exportable field — not a note buried in free text.</p>
+
+      <h3 class="sub">Record — core fields</h3>
+      <div style="margin: 1rem 0;">
+        <div class="field-row" style="background:var(--paper-3); border-bottom:1px solid var(--rule);">
+          <span class="field-name" style="font-weight:500;">Field</span>
+          <span class="field-type">Type</span>
+          <span class="field-desc">Description</span>
+        </div>
+        <div class="field-row"><span class="field-name">id</span><span class="field-type">uuid</span><span class="field-desc">Client-generated, stable across devices. Never server-assigned.</span></div>
+        <div class="field-row"><span class="field-name">format</span><span class="field-type">enum</span><span class="field-desc">Vinyl · CD · Cassette · 8-Track · Reel-to-Reel · Lathe Cut · Digital · Other. Required field, not defaulting to vinyl.</span></div>
+        <div class="field-row"><span class="field-name">artist</span><span class="field-type">string</span><span class="field-desc">Primary artist name. Searchable, sortable.</span></div>
+        <div class="field-row"><span class="field-name">title</span><span class="field-type">string</span><span class="field-desc">Album or release title.</span></div>
+        <div class="field-row"><span class="field-name">year</span><span class="field-type">integer</span><span class="field-desc">Release year of this pressing (not original recording year). Separate original_year field if known.</span></div>
+        <div class="field-row"><span class="field-name">label</span><span class="field-type">string</span><span class="field-desc">Record label name. Affects pressing identification significantly.</span></div>
+        <div class="field-row"><span class="field-name">catalog_number</span><span class="field-type">string</span><span class="field-desc">Label catalog number. Key pressing identifier for pre-barcode records.</span></div>
+        <div class="field-row"><span class="field-name">country</span><span class="field-type">string</span><span class="field-desc">Country of pressing. Affects both collectibility and grading norms.</span></div>
+        <div class="field-row"><span class="field-name">barcode</span><span class="field-type">string</span><span class="field-desc">EAN/UPC barcode as scanned. Stored as string to preserve leading zeros.</span></div>
+        <div class="field-row"><span class="field-name">discogs_id</span><span class="field-type">string</span><span class="field-desc">Discogs release ID for deep-link and re-fetch. Nullable.</span></div>
+        <div class="field-row"><span class="field-name">musicbrainz_id</span><span class="field-type">string</span><span class="field-desc">MusicBrainz release MBID. Nullable. Stored alongside Discogs ID; not merged.</span></div>
+        <div class="field-row"><span class="field-name">genre</span><span class="field-type">string[ ]</span><span class="field-desc">Array of genre tags. User-editable in addition to what APIs return.</span></div>
+        <div class="field-row"><span class="field-name">media_condition</span><span class="field-type">enum</span><span class="field-desc">M · NM · VG+ · VG · G+ · G · P using Goldmine standard. Stored as string key, displayed as label.</span></div>
+        <div class="field-row"><span class="field-name">sleeve_condition</span><span class="field-type">enum</span><span class="field-desc">Same scale. Tracked independently from media.</span></div>
+        <div class="field-row"><span class="field-name">condition_notes</span><span class="field-type">string</span><span class="field-desc">Free text — "light hairlines visible under raking light", "sleeve split bottom seam". Not merged into condition field.</span></div>
+        <div class="field-row"><span class="field-name">purchase_price</span><span class="field-type">decimal</span><span class="field-desc">What you paid. In user-selected currency. Used in value delta calculations.</span></div>
+        <div class="field-row"><span class="field-name">purchase_date</span><span class="field-type">date</span><span class="field-desc">ISO date of acquisition.</span></div>
+        <div class="field-row"><span class="field-name">purchase_source</span><span class="field-type">string</span><span class="field-desc">Free text — "Boomkat", "Record Fair Den Bosch", "gift from Joren". Not forced into a dropdown.</span></div>
+        <div class="field-row"><span class="field-name">location</span><span class="field-type">string</span><span class="field-desc">Where it's physically stored. "Shelf A, crate 3", "Geldrop studio", "lent to Emre". Free text, but queryable.</span></div>
+        <div class="field-row"><span class="field-name">for_sale</span><span class="field-type">boolean</span><span class="field-desc">Flags a record for the personal "for sale" view. No marketplace integration in v1.</span></div>
+        <div class="field-row"><span class="field-name">wishlist</span><span class="field-type">boolean</span><span class="field-desc">Item is wanted, not yet owned. Wishlist and collection share the same Record model; the wishlist is a filter view, not a separate object.</span></div>
+        <div class="field-row"><span class="field-name">tracklist</span><span class="field-type">Track[ ]</span><span class="field-desc">Array of {position, title, duration}. Populated from API on scan; user-editable.</span></div>
+        <div class="field-row"><span class="field-name">cover_image_url</span><span class="field-type">string</span><span class="field-desc">Remote URL from Discogs/Cover Art Archive. Never stored locally unless user explicitly saves for offline viewing (v2).</span></div>
+        <div class="field-row"><span class="field-name">pressing_notes</span><span class="field-type">string</span><span class="field-desc">User notes about this specific pressing — "original UK Harvest pressing", "DMM cut", "Quiex SV-P vinyl". This is the most underserved field in competitors.</span></div>
+        <div class="field-row"><span class="field-name">created_at</span><span class="field-type">timestamp</span><span class="field-desc">When added to collection.</span></div>
+        <div class="field-row"><span class="field-name">updated_at</span><span class="field-type">timestamp</span><span class="field-desc">Last local modification. Used for CRDT merge ordering.</span></div>
+        <div class="field-row"><span class="field-name">tags</span><span class="field-type">string[ ]</span><span class="field-desc">User-defined custom tags. "lent out", "needs cleaning", "birthday gift". Freeform, queryable.</span></div>
+      </div>
+
+      <div class="callout callout-good">
+        <strong>Key design decision</strong>
+        Purchase data (price, date, source) and storage location are first-class fields, not buried in notes. These are the two fields competitors universally omit that serious collectors actually need.
+      </div>
+
+      <h3 class="sub">Market data — separate object, not baked in</h3>
+      <p>Market valuation is fetched on demand and stored as a separate <code>MarketSnapshot</code> object linked to a record by ID. It is never conflated with condition-adjusted estimated value. The user always sees both separately.</p>
+
+      <div class="spec-block">
+        <div class="spec-title">MarketSnapshot fields</div>
+        <ul>
+          <li>discogs_median_eur — median of last 90 days sold on Discogs Marketplace</li>
+          <li>discogs_low / discogs_high — current listing range (not sold)</li>
+          <li>discogs_sales_count — number of data points the median is based on (shown to user)</li>
+          <li>fetched_at — timestamp. Shown as "as of [date]" in UI. Never hidden.</li>
+          <li>currency — EUR default, user-settable per collection</li>
+        </ul>
+      </div>
+
+      <div class="callout callout-warn">
+        <strong>Popsike / eBay completed auctions</strong>
+        Popsike is paywalled and scraping violates ToS. eBay's completed-auction API requires Partner Network approval and has restrictive access. These are not v1 data sources. If they become available legitimately, they are added as supplemental sources with their own fetched_at and labeled accordingly in the UI. We never silently blend data sources.
+      </div>
+    </section>
+
+    <!-- 04 SCANNING ENGINE -->
+    <section class="section" id="scanning">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">Scanning engine</h2>
+      </div>
+      <div class="section-divider"></div>
+      <p class="section-lead">The single most important UX moment in the app. Every second of friction here costs a scan.</p>
+
+      <h3 class="sub">Barcode scan — primary path</h3>
+      <p>The scan button is the centerpiece of the app. It opens the camera directly — no intermediate screen. The app uses the browser-native <code>BarcodeDetector</code> API where available (Chromium 83+, Safari 17.4+). For unsupported browsers, a polyfill library is bundled. For users who cannot or will not camera-scan, a manual barcode entry field is always one tap below the camera view.</p>
+
+      <div class="spec-block">
+        <div class="spec-title">Scan flow — every state must be handled</div>
+        <ul>
+          <li>Barcode detected → spinner → result card slides up within 2 seconds on a good connection</li>
+          <li>Result found with high confidence (Discogs match, barcode unique) → show record card, one-tap to add</li>
+          <li>Multiple matches found → show a swipeable disambiguation row: "Found 3 pressings for this barcode — pick yours"</li>
+          <li>Low confidence / single API hit → show result with amber badge, offer "View all Discogs results" link</li>
+          <li>No match found → immediately surface "Add manually" with any clues we have (barcode stored, label from cover if user provides photo). Never a blank form.</li>
+          <li>Offline → lookup attempted against local cache. If barcode was previously scanned on any device in this account, show cached result. If not, prompt manual entry with note that we'll enrich automatically when back online.</li>
+        </ul>
+      </div>
+
+      <h3 class="sub">Source priority and merge logic</h3>
+      <p>We query Discogs first (with user's token if set, public API otherwise) and MusicBrainz as a fallback. We do not query both simultaneously and try to merge them — conflicting metadata between Discogs and MusicBrainz is a real, common problem and silently merging it produces wrong data.</p>
+
+      <table class="decision-table">
+        <thead>
+          <tr><th>Source</th><th>Used for</th><th>Requires</th><th>Limitation</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Discogs (authenticated)</td><td>Primary: all fields, market data</td><td>User token (free)</td><td>Rate limited: 60 req/min authenticated</td></tr>
+          <tr><td>Discogs (public)</td><td>Primary fallback: metadata only, no market data</td><td>Nothing</td><td>25 req/min, no price suggestions</td></tr>
+          <tr><td>MusicBrainz + Cover Art Archive</td><td>Fallback: metadata, cover art, classical/obscure</td><td>Nothing</td><td>1 req/sec rate limit — must queue, not parallel</td></tr>
+          <tr><td>Local cache</td><td>Offline lookups, duplicate detection</td><td>Prior sync</td><td>Stale after 90 days, flagged as such</td></tr>
+        </tbody>
+      </table>
+
+      <h4 class="micro">Confidence badge — honest definition</h4>
+      <p>The confidence badge reflects one specific question: <em>"How certain are we that this is the correct pressing?"</em></p>
+      <div class="spec-block">
+        <div class="spec-title">Confidence tiers</div>
+        <ul>
+          <li>High (green) — barcode matched exactly one Discogs release. No disambiguation needed.</li>
+          <li>Medium (amber) — barcode matched multiple releases, user selected one; OR barcode matched but pressing details are sparse. Show badge, let user review.</li>
+          <li>Low (red) — no barcode match; result is a best-guess from artist+title search, or manually entered. Badge persists until user confirms record details.</li>
+          <li>No badge — manually added and user has confirmed all core fields. Record is considered "verified".</li>
+        </ul>
+      </div>
+
+      <h3 class="sub">Duplicate detection</h3>
+      <p>Before adding any scanned record, we check: does this barcode, or this discogs_id, already exist in the user's collection? If yes, we surface a "You already own this" notice with the existing entry shown. The user can still add it (some collectors own multiples) but we don't silently duplicate.</p>
+
+      <h3 class="sub">Manual entry — never a dead end</h3>
+      <p>Manual add is never a blank form. We pre-fill whatever we have — barcode string, any text from a user-provided photo if OCR is available. The form fields are ordered by importance (format → artist → title → year → label) not alphabetically. All fields except format, artist, and title are optional. A record with just those three fields is a complete, valid entry.</p>
+    </section>
+
+    <!-- 05 COLLECTION MANAGEMENT -->
+    <section class="section" id="collection">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2 class="section-title">Collection management</h2>
+      </div>
+      <div class="section-divider"></div>
+      <p class="section-lead">The daily-driver view. Most users will spend more time here than anywhere else.</p>
+
+      <h3 class="sub">Views and navigation</h3>
+      <p>Three top-level tabs: Collection, Wishlist, Stats. The scan button is a persistent floating button, always visible in Collection and Wishlist views — it never goes away. Settings are behind a gear icon, not in the main navigation.</p>
+
+      <h3 class="sub">Filtering and search</h3>
+      <div class="spec-block">
+        <div class="spec-title">Required filter and search capabilities — v1</div>
+        <ul>
+          <li>Free-text search across artist, title, label, notes, pressing_notes, tags</li>
+          <li>Filter by format (multi-select)</li>
+          <li>Filter by genre (multi-select)</li>
+          <li>Filter by condition (media_condition range — e.g. VG+ and above)</li>
+          <li>Filter by decade (1960s, 1970s, etc.)</li>
+          <li>Filter by country</li>
+          <li>Filter by for_sale flag</li>
+          <li>Filter by custom tag</li>
+          <li>Sort by: artist A–Z, title A–Z, year asc/desc, date added, estimated value desc, purchase price</li>
+          <li>Combined: filters + sort persist within a session. Shareable as a URL parameter for the web companion.</li>
+        </ul>
+      </div>
+
+      <h3 class="sub">Bulk operations</h3>
+      <p>Select multiple records (long-press on mobile, checkbox on web) and apply: change genre tag, change custom tag, add to a sub-collection, mark as for-sale, export selected, delete. Bulk edit respects undo — one tap reverses the last bulk action.</p>
+
+      <h3 class="sub">Sub-collections</h3>
+      <p>Users can create named sub-collections (e.g. "Jazz shelf", "In storage in Geldrop", "For sale"). A record can belong to multiple sub-collections. Sub-collections are views over the main collection, not separate data silos. Deleting a sub-collection does not delete the records in it.</p>
+
+      <h3 class="sub">Wishlist</h3>
+      <p>Wishlisted items use the same Record model with wishlist: true. Adding a wishlisted item to your collection flips the flag and prompts for purchase_price and purchase_date — it doesn't create a duplicate. A wishlist item can be shared via a read-only link for birthday/gift purposes without exposing the full collection.</p>
+
+      <h3 class="sub">Shareable shelf link</h3>
+      <p>Any collection or sub-collection can generate a public, read-only URL. The recipient sees cover art, artist, title, format badge, and year. They do not see condition, purchase price, or location. No account required to view. The link can be revoked at any time. This is the entire "social" feature set for v1.</p>
+
+      <div class="callout callout-good">
+        <strong>Missing from competitors, present here</strong>
+        Location field, pressing_notes field, duplicate detection on scan, purchase source tracking, and custom tags are the five fields serious collectors want and no existing app gives cleanly.
+      </div>
+    </section>
+
+    <!-- 06 VALUATION ENGINE -->
+    <section class="section" id="valuation">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2 class="section-title">Valuation engine</h2>
+      </div>
+      <div class="section-divider"></div>
+      <p class="section-lead">We show you what your records are worth. We are transparent about how we calculated it. We never hide the data source or the age of the data.</p>
+
+      <h3 class="sub">Condition-adjusted value — the calculation</h3>
+      <p>Raw market data (Discogs median sold price) is adjusted for the condition of the specific copy the user owns. The formula uses a Goldmine multiplier table with a 70/30 blend between media and sleeve condition.</p>
+
+      <div class="spec-block">
+        <div class="spec-title">Goldmine condition multipliers</div>
+        <ul>
+          <li>M (Mint): 1.40 × median — rarely traded, commands premium</li>
+          <li>NM (Near Mint): 1.00 × median — baseline for most Discogs pricing</li>
+          <li>VG+ (Very Good Plus): 0.70 × median</li>
+          <li>VG (Very Good): 0.40 × median</li>
+          <li>G+ (Good Plus): 0.15 × median</li>
+          <li>G (Good): 0.05 × median</li>
+          <li>P (Poor): not appraised — shown as "worn / no value estimate"</li>
+        </ul>
+      </div>
+
+      <p>The displayed estimate = <code>(media_mult × 0.7 + sleeve_mult × 0.3) × discogs_median</code>. This formula is shown to the user on demand — tapping "How is this calculated?" opens a plain-language explanation of the math.</p>
+
+      <h3 class="sub">What we show on each record</h3>
+      <div class="spec-block">
+        <div class="spec-title">Valuation display — required elements</div>
+        <ul>
+          <li>Condition-adjusted estimate with low–high range</li>
+          <li>Raw Discogs median (labeled: "Discogs median, NM condition")</li>
+          <li>Number of sales this median is based on ("Based on 47 sales, last 90 days")</li>
+          <li>Data freshness ("Fetched 3 days ago") — tappable to refresh</li>
+          <li>Purchase price vs estimate delta ("+€12 since you bought it" or "−€4")</li>
+          <li>Confidence warning if sales count is below 5: "Fewer than 5 recent sales — estimate may not reflect true market value"</li>
+        </ul>
+      </div>
+
+      <h3 class="sub">Collection-level stats</h3>
+      <p>The Stats tab shows: total estimated value, total purchase cost, overall delta (profit/loss on paper), value by format, value by genre, value by decade, top-10 most valuable records. These are calculated locally from cached market snapshots — no additional API calls on load.</p>
+
+      <h3 class="sub">Insurance report — the one paid-tier feature that actually converts</h3>
+      <p>From the Stats view: "Generate Insurance Report" button (Plus feature). Produces a PDF containing:</p>
+
+      <div class="spec-block">
+        <div class="spec-title">Insurance report — PDF contents</div>
+        <ul>
+          <li>User name, report date, unique report ID (UUID shown on cover page)</li>
+          <li>One row per record: cover thumbnail, artist, title, format, label, year, media condition, sleeve condition, condition notes, estimated replacement value</li>
+          <li>Total collection replacement value (sum of estimated values)</li>
+          <li>Data sources and methodology footnote (Discogs Marketplace pricing, Goldmine grading scale, calculation method)</li>
+          <li>SHA-256 hash of the report contents — allows insurer or user to verify the document hasn't been altered</li>
+          <li>No claim about insurer acceptance is made in the UI — we describe it as "a documentation record suitable for insurance conversations" not "accepted by Chubb/AXA"</li>
+        </ul>
+      </div>
+
+      <div class="callout callout-warn">
+        <strong>Important constraint</strong>
+        Do not claim in any marketing or in-app copy that insurers accept this document. Insurer acceptance varies and claiming it without verification is misleading. The report's value is in being a timestamped, tamper-evident inventory — that's enough.
+      </div>
+    </section>
+
+    <!-- 07 OFFLINE & SYNC -->
+    <section class="section" id="offline">
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <h2 class="section-title">Offline &amp; sync</h2>
+      </div>
+      <div class="section-divider"></div>
+      <p class="section-lead">This is the hardest engineering section and the one most specs hand-wave. We don't.</p>
+
+      <h3 class="sub">Storage architecture</h3>
+      <p>All record data lives in IndexedDB on the client. This is the primary store — the cloud is a sync target, not the source of truth. Everything the user does writes locally first. Network state is irrelevant to core operations.</p>
+
+      <h3 class="sub">Sync strategy — what we actually build, not what sounds good</h3>
+
+      <div class="callout callout-crit">
+        <strong>Honest scope</strong>
+        Full CRDT sync is the right long-term architecture but it is also a significant engineering investment with non-obvious edge cases. For v1, we implement a simpler "last-write-wins with conflict notification" strategy. CRDT is a v2 upgrade — after we've seen real sync failures and understand the actual conflict patterns in this data.
+      </div>
+
+      <div class="spec-block">
+        <div class="spec-title">v1 sync approach</div>
+        <ul>
+          <li>Every record has updated_at timestamp. On sync, we compare timestamps between client and server.</li>
+          <li>Client-wins for all mutations that originated offline (user was clearly working locally)</li>
+          <li>If the same record was edited on two devices while both were online (simultaneous edit), we surface a diff notification: "This record was updated on two devices. Tap to review." User picks which version to keep.</li>
+          <li>Sync state is always visible: cloud icon in nav bar with three states (synced, syncing, offline-changes-pending). Tapping it shows a log of pending operations.</li>
+          <li>Sync happens on app foreground after offline period, on explicit user pull-to-refresh, and on a 5-minute interval when online.</li>
+        </ul>
+      </div>
+
+      <h3 class="sub">The no-account experience</h3>
+      <p>Without an account, all data lives in IndexedDB. The user is prompted once — gently, non-blocking — to create a free account to enable sync and backup. They can use the app indefinitely without one. Without an account, they can still manually export JSON at any time. If they clear browser data, their collection is gone — we tell them this clearly in the onboarding prompt, once, without alarming them.</p>
+
+      <h3 class="sub">PWA service worker</h3>
+      <p>A service worker pre-caches the app shell and all static assets. The app loads and is fully interactive with zero network. Market data fetches fail gracefully offline — showing cached values with a "fetched X days ago" note rather than empty states or errors.</p>
+    </section>
+
+    <!-- 08 DATA FREEDOM -->
+    <section class="section" id="export">
+      <div class="section-header">
+        <span class="section-num">08</span>
+        <h2 class="section-title">Data freedom</h2>
+      </div>
+      <div class="section-divider"></div>
+
+      <div class="spec-block">
+        <div class="spec-title">Export formats — all free, all complete</div>
+        <ul>
+          <li>JSON — full data model including all fields, suitable for re-import to VinylRadar or custom processing</li>
+          <li>CSV — flat format with all non-array fields, array fields comma-joined in one column. Compatible with Excel, Google Sheets, Airtable.</li>
+          <li>Discogs import-compatible CSV — a specific column mapping that matches Discogs' bulk import format, allowing migration back to Discogs collection if the user wants</li>
+        </ul>
+      </div>
+
+      <div class="spec-block">
+        <div class="spec-title">Backup targets — v2, after cloud sync is stable</div>
+        <ul>
+          <li>Google Drive — OAuth, writes to a VinylRadar folder, one file per export</li>
+          <li>iCloud Drive (iOS PWA) — writes to Files app via Share Sheet</li>
+          <li>Manual download — always available, no authentication required</li>
+        </ul>
+      </div>
+
+      <div class="callout callout-good">
+        <strong>The Discogs-compatible export is a real differentiator</strong>
+        No collector should feel locked in. Providing a Discogs-import-compatible CSV removes the last psychological barrier to trying VinylRadar — they know they can always go back.
+      </div>
+    </section>
+
+    <!-- 09 FREE & PAID TIERS -->
+    <section class="section" id="tiers">
+      <div class="section-header">
+        <span class="section-num">09</span>
+        <h2 class="section-title">Free &amp; paid tiers</h2>
+      </div>
+      <div class="section-divider"></div>
+      <p class="section-lead">The free tier is the product. Plus is an honest upgrade, not a gate.</p>
+
+      <div class="rev-tier">
+        <div class="rev-tier-header">
+          <span class="rev-tier-name">Free — forever</span>
+          <span class="rev-tier-price">€0 / always</span>
+        </div>
+        <div class="rev-tier-body">
+          <ul>
+            <li>Unlimited records across all formats</li>
+            <li>Unlimited collections and sub-collections</li>
+            <li>Full barcode scanning (BarcodeDetector + manual fallback)</li>
+            <li>Discogs + MusicBrainz metadata lookup</li>
+            <li>Goldmine condition grading</li>
+            <li>Condition-adjusted valuation with Discogs market data</li>
+            <li>Purchase price tracking and value delta</li>
+            <li>Wishlist</li>
+            <li>All data fields — location, pressing notes, custom tags, purchase source</li>
+            <li>Full CSV and JSON export at any time</li>
+            <li>Shareable read-only shelf link</li>
+            <li>Offline-first: all core operations work with no signal</li>
+            <li>Web companion at app.vinylradar.com</li>
+            <li>Cloud sync (requires free account)</li>
+            <li>Duplicate detection on scan</li>
+          </ul>
+          <div class="note">No scan limits. No item caps. No time trials. No "you've reached your free limit" popups. Ever.</div>
+        </div>
+      </div>
+
+      <div class="rev-tier" style="border-color: var(--accent);">
+        <div class="rev-tier-header" style="background: var(--accent-pale);">
+          <span class="rev-tier-name">VinylRadar Plus</span>
+          <span class="rev-tier-price">€2.99 / month · €24.99 / year</span>
+        </div>
+        <div class="rev-tier-body">
+          <ul>
+            <li><strong>Insurance report PDF</strong> — timestamped, SHA-256 signed inventory with estimated replacement values. The most concrete, tangible paid feature.</li>
+            <li><strong>Analytics dashboard</strong> — collection growth over time, value trend chart, genre/decade/format distribution, acquisition spending by year, most-appreciated records over time</li>
+            <li><strong>Price alert</strong> — watch a wishlist item and get notified when a new Discogs listing appears below a target price</li>
+            <li><strong>Listening journal</strong> — log plays with a date stamp and optional note. View play history per record. Lifetime play counts. This is the only "listening" feature and it's manual — no scrobbling integration in v1.</li>
+            <li><strong>Scheduled cloud backup</strong> — weekly automatic JSON export to Google Drive or iCloud</li>
+            <li>Early access to new features before general release</li>
+          </ul>
+          <div class="note">Plus does not unlock data — it unlocks tools. A free user's collection is identical in data richness to a Plus user's. Plus adds analysis, documentation, and automation on top of that data.</div>
+        </div>
+      </div>
+
+      <div class="callout callout-crit">
+        <strong>Why the original Plus tier fails</strong>
+        The spec's original Plus list included "ad-free" (there are no ads in the free tier — contradictory), "family sharing" (no one asks for this), "high-res cover art" (already free on Cover Art Archive), and "custom themes" (not a $3/month value prop for collectors). The revised tier above leads with the insurance report and analytics — the two features that are genuinely worth paying for.
+      </div>
+    </section>
+
+    <!-- 10 REVENUE MODEL -->
+    <section class="section" id="revenue">
+      <div class="section-header">
+        <span class="section-num">10</span>
+        <h2 class="section-title">Revenue model</h2>
+      </div>
+      <div class="section-divider"></div>
+
+      <h3 class="sub">Primary: Plus subscriptions</h3>
+      <p>At €24.99/year, we need roughly 400 paying users to cover basic infrastructure costs (hosting, API costs, Stripe fees) for a solo-operated product. At 2,000 paying users, it pays a meaningful part-time wage. The conversion target is 5–8% of registered accounts, consistent with well-run niche utilities. The insurance report PDF is the main conversion driver — it's a feature with a clear, concrete benefit that costs nothing to explain.</p>
+
+      <h3 class="sub">Secondary: affiliate deep-links</h3>
+      <p>On each record detail page, a single "Find this on Discogs" and "Find this on eBay" link — deep-linked to the specific release, not a generic search. These use affiliate links where programs exist. Revenue ceiling is low (Discogs has no affiliate program as of 2026; eBay Partner Network pays ~1–4% on used items). This is a supplementary income line, not a business model. We never design UX around it.</p>
+
+      <h3 class="sub">What we explicitly do not do</h3>
+      <div class="spec-block">
+        <div class="spec-title">Revenue anti-patterns — ruled out</div>
+        <ul>
+          <li>No advertising — ever. No ad slots, no sponsored placements, no "promoted" records in search results.</li>
+          <li>No data selling — collection data is personal and private. It is never aggregated and sold to record labels, market research firms, or anyone else.</li>
+          <li>No "your data is held hostage" — free users export their full data at any time. Cancelling Plus doesn't delete records; it removes Plus-feature access.</li>
+          <li>No freemium bait-and-switch — features in the free tier today stay free. The free tier may grow; it will never shrink.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 11 DATABASE STRATEGY -->
+    <section class="section" id="database">
+      <div class="section-header">
+        <span class="section-num">11</span>
+        <h2 class="section-title">Database strategy</h2>
+      </div>
+      <div class="section-divider"></div>
+      <p class="section-lead">The honest version: we depend on Discogs and MusicBrainz. That dependency is managed, not denied.</p>
+
+      <h3 class="sub">Current dependency map</h3>
+      <table class="decision-table">
+        <thead>
+          <tr><th>Function</th><th>Provider</th><th>Risk</th><th>Mitigation</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Barcode → release lookup</td>
+            <td>Discogs API</td>
+            <td>Medium — API could restrict/paywall</td>
+            <td>MusicBrainz fallback; user's own token for auth'd tier</td>
+          </tr>
+          <tr>
+            <td>Classical / obscure / international</td>
+            <td>MusicBrainz</td>
+            <td>Low — open and community-run</td>
+            <td>No mitigation needed; MusicBrainz is stable</td>
+          </tr>
+          <tr>
+            <td>Cover art</td>
+            <td>Discogs images / Cover Art Archive</td>
+            <td>Low</td>
+            <td>Cover Art Archive is MusicBrainz-adjacent and stable</td>
+          </tr>
+          <tr>
+            <td>Market pricing</td>
+            <td>Discogs Marketplace API</td>
+            <td>High — Discogs monetizes this data</td>
+            <td>We cache pricing per record; re-fetch is optional, not required. If Discogs removes pricing API, users keep their cached data and we surface a notice.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 class="sub">Community corrections — not a database, a layer</h3>
+      <p>Users can flag incorrect metadata on a record ("This is wrong on Discogs — the catalog number should be ILPS 9016"). These corrections are stored in VinylRadar's own database as user-local overrides. They do not attempt to build a parallel release database — they patch the user's own view of their record. In aggregate, if we see the same correction flagged by 10+ users for the same Discogs release ID, we surface it as a community-suggested correction — but we do not attempt to maintain a release database independent of Discogs until the product has the user base to sustain it.</p>
+
+      <div class="callout callout-warn">
+        <strong>Long-term goal — Year 3+</strong>
+        If we reach 50,000+ active users with meaningful engagement, building a community-maintained pressing database becomes viable. Until then, the "OpenVinylDB" concept is aspirational, not in-scope. Naming it in the product spec as a current feature is a credibility problem we avoid.
+      </div>
+    </section>
+
+    <!-- 12 TECHNICAL STACK -->
+    <section class="section" id="stack">
+      <div class="section-header">
+        <span class="section-num">12</span>
+        <h2 class="section-title">Technical stack</h2>
+      </div>
+      <div class="section-divider"></div>
+      <p class="section-lead">We build on what exists. The current working PWA is the foundation. No rewrites.</p>
+
+      <div class="spec-block">
+        <div class="spec-title">v1 stack — production</div>
+        <ul>
+          <li>Single-file PWA (HTML/CSS/JS) — deployable to GitHub Pages, Netlify, Cloudflare Pages with zero build step. This is the existing architecture; we don't migrate away from it without a specific reason.</li>
+          <li>BarcodeDetector API for scanning, with ZXing.js polyfill for unsupported browsers</li>
+          <li>IndexedDB via the Dexie.js wrapper — structured queries, migrations, typed schema</li>
+          <li>Service worker via Workbox — pre-caches app shell, handles offline fallback for API requests</li>
+          <li>Discogs API + MusicBrainz REST API for metadata</li>
+          <li>jsPDF for insurance report generation (client-side, no server needed)</li>
+          <li>Supabase free tier for cloud sync — PostgreSQL backend, row-level security, Realtime for sync events. No proprietary lock-in; the schema is portable to any Postgres host.</li>
+          <li>Stripe for subscription payments</li>
+        </ul>
+      </div>
+
+      <div class="spec-block">
+        <div class="spec-title">Web companion — same codebase, responsive</div>
+        <ul>
+          <li>Not a separate app. The same index.html, responsive to desktop viewport.</li>
+          <li>Desktop adds: keyboard navigation, bulk-edit checkboxes, wider record grid, advanced search with operator syntax (year:1973, genre:jazz, condition:nm)</li>
+          <li>Drag-and-drop cover image upload on desktop only</li>
+          <li>All data sync is identical; no feature disparity in core features</li>
+        </ul>
+      </div>
+
+      <div class="callout callout-good">
+        <strong>Why no native app in v1</strong>
+        The existing PWA covers the core use cases: camera scanning, offline, home-screen install, push notifications (where browser supports it). Native adds significant maintenance overhead — two codebases, App Store review cycles, Apple developer fee, Google Play fee. The right trigger for going native is: user retention is strong, organic growth is real, and there is a specific capability gap (e.g. background sync, widget) that PWA cannot address.
+      </div>
+    </section>
+
+    <!-- 13 ROADMAP -->
+    <section class="section" id="roadmap">
+      <div class="section-header">
+        <span class="section-num">13</span>
+        <h2 class="section-title">Phased roadmap</h2>
+      </div>
+      <div class="section-divider"></div>
+      <p class="section-lead">A leaner, more honest sequence than the original spec. Each phase ships something real that a user can feel.</p>
+
+      <div class="phase-row">
+        <div class="phase-label">
+          <span class="phase-num">1</span>
+          Months 1–3
+        </div>
+        <div class="phase-items">
+          <div class="phase-item">Harden the existing PWA: service worker, installable, offline-first IndexedDB</div>
+          <div class="phase-item">Complete data model: add location, pressing_notes, purchase_source, tags fields</div>
+          <div class="phase-item">Duplicate detection on scan</div>
+          <div class="phase-item">Discogs-compatible CSV export</div>
+          <div class="phase-item">Shareable read-only shelf link</div>
+          <div class="phase-item">Supabase cloud sync (free account, basic last-write-wins)</div>
+          <div class="phase-item">Sub-collections / filtering by format, genre, decade, condition</div>
+          <div class="phase-item">Stats dashboard (collection value, genre split, decade chart)</div>
+          <div class="phase-item">Launch at kbaykal.github.io/VinylRadar, announce on r/vinyl and Discogs forums</div>
+        </div>
+      </div>
+
+      <div class="phase-row">
+        <div class="phase-label">
+          <span class="phase-num">2</span>
+          Months 4–6
+        </div>
+        <div class="phase-items">
+          <div class="phase-item">VinylRadar Plus subscription via Stripe (insurance report + analytics + listening journal)</div>
+          <div class="phase-item">Insurance PDF generation with SHA-256 hash (jsPDF, client-side)</div>
+          <div class="phase-item">Analytics dashboard — value over time, acquisition spend by year, top-10 appreciated</div>
+          <div class="phase-item">Wishlist price alert (Discogs new listing notification)</div>
+          <div class="phase-item">Listening journal — manual play log per record</div>
+          <div class="phase-item">Google Drive scheduled backup</div>
+          <div class="phase-item">Discogs bulk collection import (CSV from Discogs export)</div>
+        </div>
+      </div>
+
+      <div class="phase-row">
+        <div class="phase-label">
+          <span class="phase-num">3</span>
+          Months 7–12
+        </div>
+        <div class="phase-items">
+          <div class="phase-item">Web companion enhancements: keyboard nav, advanced search operators, bulk edit</div>
+          <div class="phase-item">Matrix number / OCR beta (explicitly labelled, manual fallback always primary)</div>
+          <div class="phase-item">Conflict-aware sync improvement — diff view for simultaneous edits</div>
+          <div class="phase-item">Affiliate deep-links on record detail page (discreet, no UX-design-around)</div>
+          <div class="phase-item">Condition re-grading history — track when you upgraded a record's condition over time</div>
+          <div class="phase-item">Native iOS / Android evaluation — decide yes/no based on actual retention data</div>
+        </div>
+      </div>
+
+      <div class="phase-row">
+        <div class="phase-label">
+          <span class="phase-num">4</span>
+          Year 2+
+        </div>
+        <div class="phase-items">
+          <div class="phase-item">Social / sharing features (only if user base justifies cold-start investment)</div>
+          <div class="phase-item">Community metadata corrections — aggregated, not a full database</div>
+          <div class="phase-item">Multi-user / household collection sharing</div>
+          <div class="phase-item">OpenVinylDB — only if 50k+ active users with real contribution engagement</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 14 RISK REGISTER -->
+    <section class="section" id="risks">
+      <div class="section-header">
+        <span class="section-num">14</span>
+        <h2 class="section-title">Risk register</h2>
+      </div>
+      <div class="section-divider"></div>
+      <p class="section-lead">What can kill this product, and what we do about it.</p>
+
+      <table class="decision-table">
+        <thead>
+          <tr><th>Risk</th><th>Likelihood</th><th>Impact</th><th>Mitigation</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Discogs restricts or paywalls their API</td>
+            <td>Medium</td>
+            <td>High</td>
+            <td>MusicBrainz fallback for metadata. Cached pricing data survives. Prompt users to grab Discogs token now while free. Build export-first so users aren't stranded.</td>
+          </tr>
+          <tr>
+            <td>Plus tier doesn't convert — too few paying users</td>
+            <td>Medium</td>
+            <td>Medium</td>
+            <td>Infrastructure cost is low on Supabase free + Cloudflare Pages. The app survives at low conversion. Revisit Plus feature mix after 6 months of data.</td>
+          </tr>
+          <tr>
+            <td>Supabase free tier limits hit (500MB, 50k rows)</td>
+            <td>Low (initially) → High (growth)</td>
+            <td>Medium</td>
+            <td>Supabase Pro is $25/month — absorbed by ~10 Plus subscribers. Plan migration path in advance; schema is portable Postgres.</td>
+          </tr>
+          <tr>
+            <td>BarcodeDetector API removed or restricted in browsers</td>
+            <td>Low</td>
+            <td>Medium</td>
+            <td>ZXing.js polyfill already bundled as fallback. This is a belt-and-suspenders situation already.</td>
+          </tr>
+          <tr>
+            <td>Discogs releases an official PWA / improves their mobile app</td>
+            <td>Medium</td>
+            <td>Medium</td>
+            <td>Our differentiators (unlimited free, format-agnostic, full export, purchase tracking, offline-first) are structural. They would require Discogs to fundamentally change their business model to match.</td>
+          </tr>
+          <tr>
+            <td>Solo developer burnout / project abandonment</td>
+            <td>Real</td>
+            <td>High</td>
+            <td>The three commitments include data freedom specifically because of this risk. If the project stops, users export their data. The phased roadmap is intentionally scoped to sustainable solo output. No promises beyond Phase 2 are made publicly until Phase 1 is shipped.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <footer style="padding: 3rem 0 2rem; border-top: 1px solid var(--rule); margin-top: 2rem;">
+      <p style="font-family: var(--mono); font-size: 11px; color: var(--ink-4); letter-spacing: 0.06em;">VinylRadar Product Definition v1.0 — kbaykal.github.io/VinylRadar — May 2026</p>
+    </footer>
+
+  </main>
+</div>
+
+<script>
+  const sections = document.querySelectorAll('.section, header.cover');
+  const navLinks = document.querySelectorAll('.nav-link');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        navLinks.forEach(link => {
+          link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { threshold: 0.2, rootMargin: '-10% 0px -70% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
